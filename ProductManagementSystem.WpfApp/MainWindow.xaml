@@ -1,0 +1,79 @@
+<Window x:Class="ProductManagementSystem.WpfApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Product Management - WPF" Height="718" Width="800">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+            <TextBlock Text="Поиск по ID:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox x:Name="TextBoxFindId" Width="60" Margin="0,0,10,0"/>
+            <Button x:Name="ButtonFind" Click="ButtonFind_Click" Content="Найти" Width="70" Margin="0,0,10,0"/>
+            <Button x:Name="ButtonRefresh" Click="ButtonRefresh_Click" Content="Обновить" Width="80" Margin="0,0,10,0"/>
+            <TextBlock Text="Фильтр по категории:" VerticalAlignment="Center" Margin="10,0,5,0"/>
+            <ComboBox x:Name="ComboBoxCategory" Width="150" Margin="0,0,10,0"/>
+            <Button x:Name="ButtonFilter" Click="ButtonFilter_Click" Content="Применить" Width="80"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="1.2*"/>
+            </Grid.ColumnDefinitions>
+
+            <DataGrid x:Name="DataGridProducts" Grid.Column="0" AutoGenerateColumns="True" IsReadOnly="True" Margin="0,0,10,0"/>
+
+            <StackPanel Grid.Column="1">
+                <GroupBox Header="Добавить товар" Margin="0,0,0,10">
+                    <StackPanel Margin="10">
+                        <TextBlock Text="Название:" />
+                        <TextBox x:Name="TextBoxName" Margin="0,0,0,5"/>
+                        <TextBlock Text="Описание:" />
+                        <TextBox x:Name="TextBoxDescription" Margin="0,0,0,5"/>
+                        <TextBlock Text="Категория:" />
+                        <TextBox x:Name="TextBoxCategory" Margin="0,0,0,5"/>
+                        <TextBlock Text="Цена:" />
+                        <TextBox x:Name="TextBoxPrice" Margin="0,0,0,5"/>
+                        <TextBlock Text="Количество:" />
+                        <TextBox x:Name="TextBoxQuantity" Margin="0,0,0,5"/>
+                        <Button x:Name="ButtonAdd" Click="ButtonAdd_Click" Content="Добавить" />
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Редактировать товар" Margin="0,0,0,10">
+                    <StackPanel Margin="10">
+                        <TextBlock x:Name="TextBlockEditId" Text="ID: " />
+                        <TextBlock Text="Название:" />
+                        <TextBox x:Name="TextBoxEditName" Margin="0,0,0,5"/>
+                        <TextBlock Text="Описание:" />
+                        <TextBox x:Name="TextBoxEditDescription" Margin="0,0,0,5"/>
+                        <TextBlock Text="Категория:" />
+                        <TextBox x:Name="TextBoxEditCategory" Margin="0,0,0,5"/>
+                        <TextBlock Text="Цена:" />
+                        <TextBox x:Name="TextBoxEditPrice" Margin="0,0,0,5"/>
+                        <TextBlock Text="Количество:" />
+                        <TextBox x:Name="TextBoxEditQuantity" Margin="0,0,0,5"/>
+                        <Button x:Name="ButtonSave" Click="ButtonSave_Click" Content="Сохранить" />
+                    </StackPanel>
+                </GroupBox>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Button x:Name="ButtonDelete" Click="ButtonDelete_Click" Content="Удалить" Width="80" Margin="0,0,10,0"/>
+                    <Button x:Name="ButtonTotal" Click="ButtonTotal_Click" Content="Общая стоимость" Width="120"/>
+                </StackPanel>
+
+                <TextBlock x:Name="TextBlockTotal" Margin="0,10,0,0" Text="Общая стоимость: 0"/>
+            </StackPanel>
+        </Grid>
+
+        <StatusBar Grid.Row="2" Margin="0,10,0,0">
+            <StatusBarItem>
+                <TextBlock x:Name="StatusText" Text="Готово" />
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>
