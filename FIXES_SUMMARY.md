@@ -5,12 +5,12 @@
 ### 1. Исправление несовместимости версий .NET ✅
 
 **Проблема**: Проекты использовали разные версии .NET:
-- Core: net8.0 ✅
-- ConsoleApp: net8.0 ✅  
-- WinFormsApp: net6.0-windows ❌
+- Core: net8.0 ❌ (нужен net8.0-windows)
+- ConsoleApp: net8.0 ❌ (нужен net8.0-windows)  
+- WinFormsApp: net8.0-windows ✅
 - WpfApp: net8.0-windows ✅
 
-**Решение**: Обновлен ProductManagementSystem.WinFormsApp.csproj:
+**Решение**: Обновлены все проекты на единую версию net8.0-windows:
 ```xml
 <TargetFramework>net8.0-windows</TargetFramework>
 ```
@@ -44,14 +44,30 @@ catch (Exception)
 }
 ```
 
-### 4. Текущее состояние проектов ✅
+### 4. Добавление launchSettings.json для Windows приложений ✅
+
+**Проблема**: Отсутствовали файлы launchSettings.json для Windows Forms и WPF приложений
+
+**Решение**: Созданы файлы Properties/launchSettings.json для обоих проектов:
+```json
+{
+  "profiles": {
+    "ProductManagementSystem.WinFormsApp": {
+      "commandName": "Project",
+      "dotnetRunMessages": true
+    }
+  }
+}
+```
+
+### 5. Текущее состояние проектов ✅
 
 Все проекты теперь используют совместимые версии .NET:
 
 | Проект | Версия .NET | SDK | Статус |
 |--------|-------------|-----|--------|
-| Core | net8.0 | Microsoft.NET.Sdk | ✅ |
-| ConsoleApp | net8.0 | Microsoft.NET.Sdk | ✅ |
+| Core | net8.0-windows | Microsoft.NET.Sdk | ✅ |
+| ConsoleApp | net8.0-windows | Microsoft.NET.Sdk | ✅ |
 | WinFormsApp | net8.0-windows | Microsoft.NET.Sdk | ✅ |
 | WpfApp | net8.0-windows | Microsoft.NET.Sdk | ✅ |
 

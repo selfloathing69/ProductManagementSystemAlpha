@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ProductManagementSystem.WpfApp": {
+      "commandName": "Project",
+      "dotnetRunMessages": true
+    }
+  }
+}
