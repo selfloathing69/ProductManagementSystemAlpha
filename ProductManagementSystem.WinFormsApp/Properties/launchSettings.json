@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ProductManagementSystem.WinFormsApp": {
+      "commandName": "Project",
+      "dotnetRunMessages": true
+    }
+  }
+}
