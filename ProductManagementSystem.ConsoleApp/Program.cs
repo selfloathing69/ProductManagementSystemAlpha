@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using ProductManagementSystem.Logic;
 using ProductManagementSystem.Model;
 
@@ -23,6 +24,17 @@ namespace ProductManagementSystem.ConsoleApp
         /// <param name="args">Аргументы командной строки</param>
         static void Main(string[] args)
         {
+            // Настройка кодировки консоли для корректного отображения русского текста
+            try
+            {
+                Console.OutputEncoding = Encoding.UTF8;
+                Console.InputEncoding = Encoding.UTF8;
+            }
+            catch (Exception)
+            {
+                // Игнорируем ошибки настройки кодировки в системах, где это не поддерживается
+            }
+            
             bool exit = false;
             Console.WriteLine("===== Система управления товарами (Console) =====");
             
