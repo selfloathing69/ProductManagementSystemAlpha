@@ -310,7 +310,7 @@ namespace ProductManagementSystem.ConsoleApp
         static void CalculateTotalInventoryValue()
         {
             var total = _productLogic.CalculateTotalInventoryValue();
-            Console.WriteLine($"Общая стоимость товаров на складе: {total:C}");
+            Console.WriteLine($"Общая стоимость товаров на складе: {total} руб");
         }
     }
 }
