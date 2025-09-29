@@ -35,6 +35,15 @@
                 <!-- Добавление товара -->
                 <GroupBox Header="Добавить товар" Margin="0,0,0,15">
                     <StackPanel Margin="10">
+                        <TextBlock Text="ID:" />
+                        <ComboBox x:Name="ComboBoxId" IsEditable="True" Margin="0,0,0,8">
+                            <ComboBoxItem Content="1"/>
+                            <ComboBoxItem Content="2"/>
+                            <ComboBoxItem Content="3"/>
+                            <ComboBoxItem Content="4"/>
+                            <ComboBoxItem Content="5"/>
+                        </ComboBox>
+                        
                         <TextBlock Text="Название:" />
                         <TextBox x:Name="TextBoxName" Margin="0,0,0,8"/>
                         
@@ -133,6 +142,7 @@
                 <!-- Действия -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,10">
                     <Button x:Name="ButtonDelete" Click="ButtonDelete_Click" Content="Удалить" Width="100" Margin="0,0,10,0"/>
+                    <Button x:Name="ButtonDeleteByQuantity" Click="ButtonDeleteByQuantity_Click" Content="Удалить товар" Width="100" Margin="0,0,10,0"/>
                     <Button x:Name="ButtonTotal" Click="ButtonTotal_Click" Content="Общая стоимость" Width="140"/>
                 </StackPanel>
 

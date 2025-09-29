@@ -20,10 +20,12 @@ namespace ProductManagementSystem.WinFormsApp
         private Button btnRefresh; // обновить список
         private Button btnAdd;     // показать форму добавления
         private Button btnDelete;  // удалить выбранный товар
+        private Button btnDeleteByQuantity; // удалить товар по количеству
 
         // панель добавления нового товара (появляется поверх формы)
         private Panel addPanel;
-        // поля ввода: имя и описание — обычные TextBox, но с ограничением на русские буквы
+        // поля ввода: ID, имя и описание 
+        private NumericUpDown numId;
         private TextBox txtName, txtDescription;
         // категория как выпадающий список — чтобы не было мусора и опечаток
         private ComboBox cmbCategory;
@@ -77,11 +79,16 @@ namespace ProductManagementSystem.WinFormsApp
             btnDelete = new Button { Text = "Удалить выбранный", Left = 340, Top = 420, Width = 150, Height = 35 };
             btnDelete.Click += BtnDelete_Click;
 
+            // кнопка удаления по количеству
+            btnDeleteByQuantity = new Button { Text = "Удалить товар", Left = 500, Top = 420, Width = 150, Height = 35 };
+            btnDeleteByQuantity.Click += BtnDeleteByQuantity_Click;
+
             // добавляем контролы на форму (сначала таблицу, потом кнопки — сверху вниз)
             this.Controls.Add(dataGridView);
             this.Controls.Add(btnRefresh);
             this.Controls.Add(btnAdd);
             this.Controls.Add(btnDelete);
+            this.Controls.Add(btnDeleteByQuantity);
 
             // готовим панель для добавления товара, но пока прячем
             CreateAddPanel();
@@ -130,7 +137,7 @@ namespace ProductManagementSystem.WinFormsApp
         {
             // размеры панели — чтобы смотрелось аккуратно по центру
             int panelWidth = 460;
-            int panelHeight = 300;
+            int panelHeight = 340; // увеличиваем высоту для ID поля
 
             addPanel = new Panel
             {
@@ -145,25 +152,29 @@ namespace ProductManagementSystem.WinFormsApp
             // заголовок панели — просто чтобы было понятно, что это за блок
             Label lblTitle = new Label { Text = "Новый товар", Left = 10, Top = 10, Width = 200, Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold) };
 
+            // поле «ID» — числовое поле для ручного ввода ID
+            Label lblId = new Label { Text = "ID:", Left = 10, Top = 45, Width = 100 };
+            numId = new NumericUpDown { Left = 120, Top = 40, Width = 150, Minimum = 1M, Maximum = 999999M };
+
             // поле «Название» — обычный TextBox, но ниже ограничим ввод русскими символами
-            Label lblName = new Label { Text = "Название:", Left = 10, Top = 45, Width = 100 };
-            txtName = new TextBox { Left = 120, Top = 40, Width = 300 };
+            Label lblName = new Label { Text = "Название:", Left = 10, Top = 80, Width = 100 };
+            txtName = new TextBox { Left = 120, Top = 75, Width = 300 };
             // разрешаем только русские буквы (и пробел/дефис), чтобы не было латиницы и цифр
             txtName.KeyPress += RussianOnly_KeyPress;
             txtName.TextChanged += RussianOnly_TextChanged;
 
             // поле «Описание» — по тем же правилам, только русские плюс пробел/дефис
-            Label lblDesc = new Label { Text = "Описание:", Left = 10, Top = 80, Width = 100 };
-            txtDescription = new TextBox { Left = 120, Top = 75, Width = 300 };
+            Label lblDesc = new Label { Text = "Описание:", Left = 10, Top = 115, Width = 100 };
+            txtDescription = new TextBox { Left = 120, Top = 110, Width = 300 };
             txtDescription.KeyPress += RussianOnly_KeyPress;
             txtDescription.TextChanged += RussianOnly_TextChanged;
 
             // цена — decimal, две цифры после запятой, без экстрима
-            Label lblPrice = new Label { Text = "Цена:", Left = 10, Top = 115, Width = 100 };
+            Label lblPrice = new Label { Text = "Цена:", Left = 10, Top = 150, Width = 100 };
             numPrice = new NumericUpDown
             {
                 Left = 120,
-                Top = 110,
+                Top = 145,
                 Width = 150,
                 Maximum = 1000000M,   // верхнее ограничение, чтобы случайно не уехали в космос
                 DecimalPlaces = 2,    // копейки учитываем
@@ -171,11 +182,11 @@ namespace ProductManagementSystem.WinFormsApp
             };
 
             // категория — выпадающий список, чтобы данные были консистентные
-            Label lblCategory = new Label { Text = "Категория:", Left = 10, Top = 150, Width = 100 };
+            Label lblCategory = new Label { Text = "Категория:", Left = 10, Top = 185, Width = 100 };
             cmbCategory = new ComboBox
             {
                 Left = 120,
-                Top = 145,
+                Top = 180,
                 Width = 300,
                 DropDownStyle = ComboBoxStyle.DropDownList // выбор только из списка, руками не печатаем
             };
@@ -183,25 +194,27 @@ namespace ProductManagementSystem.WinFormsApp
             cmbCategory.Items.AddRange(new object[] { "Электроника", "Одежда", "Обувь", "Разное" });
 
             // количество — целое число, тоже без отрицательных значений
-            Label lblStock = new Label { Text = "Количество:", Left = 10, Top = 185, Width = 100 };
+            Label lblStock = new Label { Text = "Количество:", Left = 10, Top = 220, Width = 100 };
             numStock = new NumericUpDown
             {
                 Left = 120,
-                Top = 180,
+                Top = 215,
                 Width = 150,
                 Maximum = 100000M, // на всякий случай потолок
                 Minimum = 0M
             };
 
             // кнопка «ок» — сохраняем и закрываем панель; «отмена» — просто закрываем
-            btnAddOk = new Button { Text = "ОК", Left = 120, Top = 225, Width = 90 };
-            btnAddCancel = new Button { Text = "Отмена", Left = 240, Top = 225, Width = 90 };
+            btnAddOk = new Button { Text = "ОК", Left = 120, Top = 260, Width = 90 };
+            btnAddCancel = new Button { Text = "Отмена", Left = 240, Top = 260, Width = 90 };
 
             btnAddOk.Click += BtnAddOk_Click;
             btnAddCancel.Click += (s, e) => HideAddPanel();
 
             // раскладываем всё по панели
             addPanel.Controls.Add(lblTitle);
+            addPanel.Controls.Add(lblId);
+            addPanel.Controls.Add(numId);
             addPanel.Controls.Add(lblName);
             addPanel.Controls.Add(txtName);
             addPanel.Controls.Add(lblDesc);
@@ -229,6 +242,7 @@ namespace ProductManagementSystem.WinFormsApp
         private void ShowAddPanel()
         {
             // чистим поля, чтобы пользователь не подправлял старые данные
+            numId.Value = 1M;
             txtName.Text = string.Empty;
             txtDescription.Text = string.Empty;
             cmbCategory.SelectedIndex = -1;
@@ -242,10 +256,11 @@ namespace ProductManagementSystem.WinFormsApp
             btnRefresh.Enabled = false;
             btnAdd.Enabled = false;
             btnDelete.Enabled = false;
+            btnDeleteByQuantity.Enabled = false;
             dataGridView.Enabled = false;
 
-            // ставим курсор в название — обычно с этого и начинают
-            txtName.Focus();
+            // ставим курсор в ID — с этого начинаем
+            numId.Focus();
         }
 
         /// <summary>
@@ -257,6 +272,7 @@ namespace ProductManagementSystem.WinFormsApp
             btnRefresh.Enabled = true;
             btnAdd.Enabled = true;
             btnDelete.Enabled = true;
+            btnDeleteByQuantity.Enabled = true;
             dataGridView.Enabled = true;
         }
 
@@ -274,9 +290,55 @@ namespace ProductManagementSystem.WinFormsApp
                     return;
                 }
 
+                int id = (int)numId.Value;
+                
+                // Проверяем существование ID
+                if (_logic.IdExists(id))
+                {
+                    var result = MessageBox.Show(
+                        $"ID {id} уже существует, хотите присвоить новому товару другой id?",
+                        "ID уже существует",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question);
+                    
+                    if (result == DialogResult.Yes)
+                    {
+                        return; // Пользователь может изменить ID и попробовать снова
+                    }
+                    else
+                    {
+                        // Проверяем возможность суммирования количества
+                        string name = txtName.Text.Trim();
+                        string category = cmbCategory.SelectedItem?.ToString()!.Trim();
+                        
+                        var existingProduct = _logic.FindProductByNameAndCategory(name, category);
+                        if (existingProduct != null && !category.Equals("Разное", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var sumResult = MessageBox.Show(
+                                $"Такой товар {name} уже существует в количестве: {existingProduct.StockQuantity}, Желаете суммировать введеное вами количество с уже имеющимся?",
+                                "Товар уже существует",
+                                MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Question);
+                            
+                            if (sumResult == DialogResult.Yes)
+                            {
+                                _logic.AddQuantityToProduct(existingProduct.Id, (int)numStock.Value);
+                                RefreshGrid();
+                                HideAddPanel();
+                                MessageBox.Show($"Количество товара увеличено. Новое количество: {existingProduct.StockQuantity}", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                return;
+                            }
+                        }
+                        
+                        MessageBox.Show("Операция отменена.", "Отмена", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
+                    }
+                }
+
                 // собираем товар из полей — ничего хитрого, всё по модели
                 var product = new Product
                 {
+                    Id = id,
                     Name = txtName.Text.Trim(),
                     Description = txtDescription.Text.Trim(),
                     Price = numPrice.Value, // decimal напрямую, совпадает с типом в модели
@@ -381,6 +443,126 @@ namespace ProductManagementSystem.WinFormsApp
                     sb.Append(ch);
             }
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// обработчик кнопки удаления товара по количеству
+        /// </summary>
+        private void BtnDeleteByQuantity_Click(object? sender, EventArgs e)
+        {
+            var productsWithIndexes = _logic.GetProductsWithIndexes();
+            if (productsWithIndexes.Count == 0)
+            {
+                MessageBox.Show("Товары не найдены.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // Создаем форму для выбора товара
+            var selectForm = new Form
+            {
+                Text = "Выберите товар для удаления",
+                Size = new System.Drawing.Size(500, 400),
+                StartPosition = FormStartPosition.CenterParent,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
+
+            // Список товаров
+            var listBox = new ListBox
+            {
+                Dock = DockStyle.Top,
+                Height = 200
+            };
+
+            foreach (var (index, product) in productsWithIndexes)
+            {
+                listBox.Items.Add($"{index}. {product.Name}, {product.StockQuantity} шт");
+            }
+
+            // Поле для ввода количества
+            var lblQuantity = new Label
+            {
+                Text = "Количество для удаления (0 - всё):",
+                Location = new System.Drawing.Point(10, 220),
+                Size = new System.Drawing.Size(250, 20)
+            };
+
+            var numQuantity = new NumericUpDown
+            {
+                Location = new System.Drawing.Point(10, 245),
+                Size = new System.Drawing.Size(120, 25),
+                Minimum = 0,
+                Maximum = 999999
+            };
+
+            var btnOk = new Button
+            {
+                Text = "ОК",
+                Location = new System.Drawing.Point(10, 280),
+                Size = new System.Drawing.Size(80, 30)
+            };
+
+            var btnCancel = new Button
+            {
+                Text = "Отмена",
+                Location = new System.Drawing.Point(100, 280),
+                Size = new System.Drawing.Size(80, 30)
+            };
+
+            // Обновляем максимум количества при выборе товара
+            listBox.SelectedIndexChanged += (s, args) =>
+            {
+                if (listBox.SelectedIndex >= 0)
+                {
+                    var selectedProduct = productsWithIndexes[listBox.SelectedIndex].Product;
+                    numQuantity.Maximum = selectedProduct.StockQuantity;
+                    numQuantity.Value = 0;
+                }
+            };
+
+            btnOk.Click += (s, args) =>
+            {
+                if (listBox.SelectedIndex < 0)
+                {
+                    MessageBox.Show("Выберите товар для удаления.", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                var selectedProduct = productsWithIndexes[listBox.SelectedIndex].Product;
+                int quantityToRemove = (int)numQuantity.Value;
+
+                if (quantityToRemove == 0)
+                    quantityToRemove = selectedProduct.StockQuantity;
+
+                var confirmResult = MessageBox.Show(
+                    $"Вы хотите удалить {selectedProduct.Name} в количестве {quantityToRemove}, вы уверены?",
+                    "Подтверждение удаления",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (confirmResult == DialogResult.Yes)
+                {
+                    _logic.RemoveQuantityFromProduct(selectedProduct.Id, quantityToRemove);
+                    RefreshGrid();
+                    MessageBox.Show("Товар удален в указанном количестве.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+                selectForm.DialogResult = DialogResult.OK;
+            };
+
+            btnCancel.Click += (s, args) =>
+            {
+                selectForm.DialogResult = DialogResult.Cancel;
+            };
+
+            selectForm.Controls.Add(listBox);
+            selectForm.Controls.Add(lblQuantity);
+            selectForm.Controls.Add(numQuantity);
+            selectForm.Controls.Add(btnOk);
+            selectForm.Controls.Add(btnCancel);
+
+            selectForm.ShowDialog(this);
         }
     }
 }

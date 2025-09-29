@@ -42,6 +42,7 @@ namespace ProductManagementSystem.ConsoleApp
                     case "5": DeleteProduct(); break;
                     case "6": FilterByCategory(); break;
                     case "7": CalculateTotalInventoryValue(); break;
+                    case "9": DeleteProductByQuantity(); break;
                     case "0": exit = true; break;
                     default: Console.WriteLine("Неверный выбор."); break;
                 }
@@ -68,6 +69,7 @@ namespace ProductManagementSystem.ConsoleApp
             Console.WriteLine("5. Удалить товар");
             Console.WriteLine("6. Фильтр по категории");
             Console.WriteLine("7. Рассчитать общую стоимость на складе");
+            Console.WriteLine("9. Удалить товар");
             Console.WriteLine("0. Выход");
             Console.Write("Выбор: ");
         }
@@ -119,7 +121,7 @@ namespace ProductManagementSystem.ConsoleApp
 
         /// <summary>
         /// Добавляет новый товар в систему.
-        /// Включает валидацию всех числовых полей.
+        /// Включает валидацию всех числовых полей и ручной ввод ID.
         /// </summary>
         static void AddProduct()
         {
@@ -157,6 +159,51 @@ namespace ProductManagementSystem.ConsoleApp
                 return; 
             } 
             prod.StockQuantity = q;
+            
+            // Ввод ID с проверкой на существование
+            while (true)
+            {
+                Console.Write("ID: ");
+                string idInput = Console.ReadLine() ?? "";
+                if (!int.TryParse(idInput, out var id) || id <= 0)
+                {
+                    Console.WriteLine("Некорректный ID. Введите положительное число.");
+                    continue;
+                }
+                
+                if (_productLogic.IdExists(id))
+                {
+                    Console.Write($"ID {id} уже существует, хотите присвоить новому товару другой id? (да/нет): ");
+                    string response = Console.ReadLine()?.ToLower().Trim() ?? "";
+                    if (response == "да" || response == "yes" || response == "y")
+                    {
+                        continue; // Спрашиваем ID заново
+                    }
+                    else
+                    {
+                        // Пользователь не хочет менять ID, проверяем возможность суммирования
+                        var existingProduct = _productLogic.FindProductByNameAndCategory(prod.Name, prod.Category);
+                        if (existingProduct != null && !prod.Category.Equals("Разное", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Console.Write($"Такой товар {prod.Name} уже существует в количестве: {existingProduct.StockQuantity}, Желаете суммировать введеное вами количество с уже имеющимся? (да/нет): ");
+                            string sumResponse = Console.ReadLine()?.ToLower().Trim() ?? "";
+                            if (sumResponse == "да" || sumResponse == "yes" || sumResponse == "y")
+                            {
+                                _productLogic.AddQuantityToProduct(existingProduct.Id, prod.StockQuantity);
+                                Console.WriteLine($"Количество товара увеличено. Новое количество: {existingProduct.StockQuantity}");
+                                return;
+                            }
+                        }
+                        Console.WriteLine("Операция отменена.");
+                        return;
+                    }
+                }
+                else
+                {
+                    prod.Id = id;
+                    break; // ID уникален, продолжаем
+                }
+            }
             
             _productLogic.AddProduct(prod);
             Console.WriteLine("Товар успешно добавлен.");
@@ -311,6 +358,96 @@ namespace ProductManagementSystem.ConsoleApp
         {
             var total = _productLogic.CalculateTotalInventoryValue();
             Console.WriteLine($"Общая стоимость товаров на складе: {total} руб");
+        }
+
+        /// <summary>
+        /// Удаляет товар по количеству с возможностью выбора из списка.
+        /// </summary>
+        static void DeleteProductByQuantity()
+        {
+            var productsWithIndexes = _productLogic.GetProductsWithIndexes();
+            if (productsWithIndexes.Count == 0)
+            {
+                Console.WriteLine("Товары не найдены.");
+                return;
+            }
+            
+            Console.WriteLine("===== Список товаров =====");
+            foreach (var (index, product) in productsWithIndexes)
+            {
+                Console.WriteLine($"{index}. {product.Name}, {product.StockQuantity} шт");
+            }
+            
+            // Выбор номера товара
+            while (true)
+            {
+                Console.Write("Введите номер товара который вы хотите удалить: ");
+                var input = Console.ReadLine() ?? "";
+                
+                if (!int.TryParse(input, out int selectedNumber) || selectedNumber < 1 || selectedNumber > productsWithIndexes.Count)
+                {
+                    Console.WriteLine("Номера нет, введите корректный номер товара.");
+                    continue;
+                }
+                
+                var selectedProduct = productsWithIndexes[selectedNumber - 1].Product;
+                
+                // Ввод количества для удаления
+                while (true)
+                {
+                    Console.WriteLine($"Текущее количество: {selectedProduct.StockQuantity}");
+                    Console.WriteLine("Введите количество для удаления или 0 для удаления всего (Enter - отмена):");
+                    Console.Write("Ваше значение: ");
+                    
+                    var quantityInput = Console.ReadLine()?.Trim() ?? "";
+                    
+                    if (string.IsNullOrEmpty(quantityInput))
+                    {
+                        // Пустой ввод - отмена
+                        return;
+                    }
+                    
+                    if (quantityInput == "0")
+                    {
+                        // Удалить всё
+                        Console.WriteLine($"Вы хотите удалить {selectedProduct.Name} в количестве {selectedProduct.StockQuantity}, вы уверены?");
+                        Console.Write("1. Да 2. Нет: ");
+                        
+                        var confirmation = Console.ReadLine()?.Trim() ?? "";
+                        
+                        if (confirmation == "1")
+                        {
+                            _productLogic.DeleteProduct(selectedProduct.Id);
+                            Console.WriteLine("Товар удален.");
+                        }
+                        return;
+                    }
+                    else if (int.TryParse(quantityInput, out int quantity) && quantity > 0)
+                    {
+                        if (quantity > selectedProduct.StockQuantity)
+                        {
+                            Console.WriteLine("Количество слишком большое, введите корректное значение.");
+                            continue;
+                        }
+                        
+                        Console.WriteLine($"Вы хотите удалить {selectedProduct.Name} в количестве {quantity}, вы уверены?");
+                        Console.Write("1. Да 2. Нет: ");
+                        
+                        var confirmation = Console.ReadLine()?.Trim() ?? "";
+                        
+                        if (confirmation == "1")
+                        {
+                            _productLogic.RemoveQuantityFromProduct(selectedProduct.Id, quantity);
+                            Console.WriteLine("Товар удален в указанном количестве.");
+                        }
+                        return;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Введите корректное количество.");
+                    }
+                }
+            }
         }
     }
 }

@@ -18,9 +18,9 @@ namespace ProductManagementSystem.Logic
         private List<Product> _products = new List<Product>();
         
         /// <summary>
-        /// Счётчик для генерации уникальных идентификаторов товаров.
+        /// Счётчик для генерации уникальных внутренних номеров товаров.
         /// </summary>
-        private int _nextId = 1;
+        private int _nextNumber = 1;
 
         /// <summary>
         /// Инициализирует новый экземпляр класса ProductLogic и заполняет его примерами товаров.
@@ -28,21 +28,21 @@ namespace ProductManagementSystem.Logic
         public ProductLogic()
         {
             // Добавление примеров товаров для демонстрации функциональности системы
-            AddProduct(new Product { Name = "Ноутбук", Description = "Мощный игровой ноутбук", Price = 75000, Category = "Электроника", StockQuantity = 10 });
-            AddProduct(new Product { Name = "Смартфон", Description = "Флагманский телефон", Price = 85000, Category = "Электроника", StockQuantity = 25 });
-            AddProduct(new Product { Name = "Футболка", Description = "Хлопковая футболка", Price = 1500, Category = "Одежда", StockQuantity = 50 });
-            AddProduct(new Product { Name = "Кроссовки", Description = "Спортивные кроссовки", Price = 6500, Category = "Обувь", StockQuantity = 15 });
+            AddProduct(new Product { Id = 1, Name = "Ноутбук", Description = "Мощный игровой ноутбук", Price = 75000, Category = "Электроника", StockQuantity = 10 });
+            AddProduct(new Product { Id = 2, Name = "Смартфон", Description = "Флагманский телефон", Price = 85000, Category = "Электроника", StockQuantity = 25 });
+            AddProduct(new Product { Id = 3, Name = "Футболка", Description = "Хлопковая футболка", Price = 1500, Category = "Одежда", StockQuantity = 50 });
+            AddProduct(new Product { Id = 4, Name = "Кроссовки", Description = "Спортивные кроссовки", Price = 6500, Category = "Обувь", StockQuantity = 15 });
         }
 
         /// <summary>
         /// Добавляет новый товар в систему.
-        /// Автоматически присваивает уникальный идентификатор товару.
+        /// Присваивает внутренний номер товару, ID должен быть предварительно установлен.
         /// </summary>
         /// <param name="product">Товар для добавления</param>
-        /// <returns>Добавленный товар с присвоенным ID</returns>
+        /// <returns>Добавленный товар с присвоенным номером</returns>
         public Product AddProduct(Product product)
         {
-            product.Id = _nextId++;  // Присваиваем уникальный ID и увеличиваем счётчик
+            product.Number = _nextNumber++;  // Присваиваем уникальный внутренний номер и увеличиваем счётчик
             _products.Add(product);  // Добавляем товар в список
             return product;
         }
@@ -117,6 +117,77 @@ namespace ProductManagementSystem.Logic
         public decimal CalculateTotalInventoryValue()
         {
             return _products.Sum(p => p.Price * p.StockQuantity);
+        }
+
+        /// <summary>
+        /// Проверяет, существует ли товар с указанным ID.
+        /// </summary>
+        /// <param name="id">ID для проверки</param>
+        /// <returns>true, если товар с таким ID существует</returns>
+        public bool IdExists(int id)
+        {
+            return _products.Any(p => p.Id == id);
+        }
+
+        /// <summary>
+        /// Находит товар с таким же названием и категорией.
+        /// </summary>
+        /// <param name="name">Название товара</param>
+        /// <param name="category">Категория товара</param>
+        /// <returns>Товар с такими же названием и категорией или null</returns>
+        public Product? FindProductByNameAndCategory(string name, string category)
+        {
+            return _products.FirstOrDefault(p => 
+                p.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && 
+                p.Category.Equals(category, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Увеличивает количество товара на указанное значение.
+        /// </summary>
+        /// <param name="id">ID товара</param>
+        /// <param name="quantity">Количество для добавления</param>
+        /// <returns>true, если операция успешна</returns>
+        public bool AddQuantityToProduct(int id, int quantity)
+        {
+            var product = GetProduct(id);
+            if (product == null) return false;
+            
+            product.StockQuantity += quantity;
+            return true;
+        }
+
+        /// <summary>
+        /// Уменьшает количество товара на указанное значение.
+        /// Если количество становится <= 0, товар удаляется.
+        /// </summary>
+        /// <param name="id">ID товара</param>
+        /// <param name="quantityToRemove">Количество для удаления</param>
+        /// <returns>true, если операция успешна</returns>
+        public bool RemoveQuantityFromProduct(int id, int quantityToRemove)
+        {
+            var product = GetProduct(id);
+            if (product == null) return false;
+            
+            if (quantityToRemove >= product.StockQuantity)
+            {
+                // Если удаляем всё или больше - удаляем товар полностью
+                return DeleteProduct(id);
+            }
+            else
+            {
+                product.StockQuantity -= quantityToRemove;
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Получает список всех товаров с их порядковыми номерами для выбора.
+        /// </summary>
+        /// <returns>Список кортежей (номер, товар)</returns>
+        public List<(int Index, Product Product)> GetProductsWithIndexes()
+        {
+            return _products.Select((p, index) => (index + 1, p)).ToList();
         }
     }
 }

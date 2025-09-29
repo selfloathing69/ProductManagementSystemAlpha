@@ -14,6 +14,11 @@ namespace ProductManagementSystem.Model
         public int Id { get; set; }
         
         /// <summary>
+        /// Внутренний номер для автоинкремента (бывший Id).
+        /// </summary>
+        public int Number { get; set; }
+        
+        /// <summary>
         /// Название товара.
         /// </summary>
         public string Name { get; set; } = string.Empty;
@@ -54,7 +59,7 @@ namespace ProductManagementSystem.Model
         /// <param name="stockQuantity">Количество на складе</param>
         public Product(int id, string name, string description, decimal price, string category, int stockQuantity)
         {
-            Id = id; Name = name; Description = description; Price = price; Category = category; StockQuantity = stockQuantity;
+            Id = id; Number = 0; Name = name; Description = description; Price = price; Category = category; StockQuantity = stockQuantity;
         }
 
         /// <summary>
