@@ -4,6 +4,7 @@ using ProductManagementSystem.Logic;
 using ProductManagementSystem.Model;
 using System.Collections.Generic;
 using System.Windows.Controls;
+using System; // <--- добавьте эту строку
 
 namespace ProductManagementSystem.WpfApp
 {
