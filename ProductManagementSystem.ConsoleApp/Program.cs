@@ -66,10 +66,10 @@ namespace ProductManagementSystem.ConsoleApp
             Console.WriteLine("2. Показать детали товара");
             Console.WriteLine("3. Добавить новый товар");
             Console.WriteLine("4. Обновить товар");
-            Console.WriteLine("5. Удалить товар");
+            Console.WriteLine("5. Удалить весь товар с определённым ID");
             Console.WriteLine("6. Фильтр по категории");
             Console.WriteLine("7. Рассчитать общую стоимость на складе");
-            Console.WriteLine("9. Удалить товар");
+            Console.WriteLine("9. Удалить указанное количество товара");
             Console.WriteLine("0. Выход");
             Console.Write("Выбор: ");
         }
