@@ -67,7 +67,7 @@ namespace ProductManagementSystem.Logic
         {
             if (_useRepository)
             {
-                _repository.Add(product);
+                _repository!.Add(product);
                 return product;
             }
             else
@@ -89,7 +89,7 @@ namespace ProductManagementSystem.Logic
             {
                 try
                 {
-                    return _repository.ReadById(id);
+                    return _repository!.ReadById(id);
                 }
                 catch
                 {
@@ -110,7 +110,7 @@ namespace ProductManagementSystem.Logic
         {
             if (_useRepository)
             {
-                return _repository.ReadAll().ToList();
+                return _repository!.ReadAll().ToList();
             }
             else
             {
@@ -129,7 +129,7 @@ namespace ProductManagementSystem.Logic
             {
                 try
                 {
-                    _repository.Update(product);
+                    _repository!.Update(product);
                     return true;
                 }
                 catch
@@ -163,7 +163,7 @@ namespace ProductManagementSystem.Logic
             {
                 try
                 {
-                    _repository.Delete(id);
+                    _repository!.Delete(id);
                     return true;
                 }
                 catch
@@ -190,7 +190,8 @@ namespace ProductManagementSystem.Logic
         {
             if (_useRepository)
             {
-                return _repository.ReadAll().Where((Product p) => p.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
+                var allProducts = (IEnumerable<Product>)_repository!.ReadAll();
+                return allProducts.Where(p => p.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
             }
             else
             {
@@ -207,7 +208,8 @@ namespace ProductManagementSystem.Logic
         {
             if (_useRepository)
             {
-                return _repository.ReadAll().Sum((Product p) => p.Price * p.StockQuantity);
+                var allProducts = (IEnumerable<Product>)_repository!.ReadAll();
+                return allProducts.Sum(p => p.Price * p.StockQuantity);
             }
             else
             {

@@ -19,7 +19,7 @@ namespace ProductManagementSystem.DataAccessLayer.EF
         /// <summary>
         /// Набор данных для работы с товарами.
         /// </summary>
-        public DbSet<Product> Products { get; set; }
+        public DbSet<Product> Products { get; set; } = null!;
 
         /// <summary>
         /// Настройка модели данных при создании базы данных.
