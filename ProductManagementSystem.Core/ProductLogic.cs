@@ -13,20 +13,32 @@ namespace ProductManagementSystem.Logic
     public class ProductLogic
     {
         /// <summary>
-        /// Список всех товаров в системе.
+        /// Список всех товаров в системе (используется когда работа идёт без репозитория).
         /// </summary>
         private List<Product> _products = new List<Product>();
         
         /// <summary>
-        /// Счётчик для генерации уникальных идентификаторов товаров.
+        /// Счётчик для генерации уникальных идентификаторов товаров (используется когда работа идёт без репозитория).
         /// </summary>
         private int _nextId = 1;
 
         /// <summary>
+        /// Репозиторий для работы с данными (если используется).
+        /// </summary>
+        private dynamic? _repository = null;
+
+        /// <summary>
+        /// Флаг, указывающий используется ли репозиторий.
+        /// </summary>
+        private bool _useRepository = false;
+
+        /// <summary>
         /// Инициализирует новый экземпляр класса ProductLogic и заполняет его примерами товаров.
+        /// Используется режим работы с локальным списком в памяти.
         /// </summary>
         public ProductLogic()
         {
+            _useRepository = false;
             // Добавление примеров товаров для демонстрации функциональности системы
             AddProduct(new Product { Name = "Ноутбук", Description = "Мощный игровой ноутбук", Price = 75000, Category = "Электроника", StockQuantity = 10 });
             AddProduct(new Product { Name = "Смартфон", Description = "Флагманский телефон", Price = 85000, Category = "Электроника", StockQuantity = 25 });
@@ -35,16 +47,35 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
+        /// Инициализирует новый экземпляр класса ProductLogic с использованием репозитория.
+        /// Используется режим работы с базой данных через репозиторий.
+        /// </summary>
+        /// <param name="repository">Репозиторий для работы с данными</param>
+        public ProductLogic(dynamic repository)
+        {
+            _repository = repository;
+            _useRepository = true;
+        }
+
+        /// <summary>
         /// Добавляет новый товар в систему.
-        /// Автоматически присваивает уникальный идентификатор товару.
+        /// Автоматически присваивает уникальный идентификатор товару (только для режима без репозитория).
         /// </summary>
         /// <param name="product">Товар для добавления</param>
         /// <returns>Добавленный товар с присвоенным ID</returns>
         public Product AddProduct(Product product)
         {
-            product.Id = _nextId++;  // Присваиваем уникальный ID и увеличиваем счётчик
-            _products.Add(product);  // Добавляем товар в список
-            return product;
+            if (_useRepository)
+            {
+                _repository.Add(product);
+                return product;
+            }
+            else
+            {
+                product.Id = _nextId++;  // Присваиваем уникальный ID и увеличиваем счётчик
+                _products.Add(product);  // Добавляем товар в список
+                return product;
+            }
         }
 
         /// <summary>
@@ -54,7 +85,21 @@ namespace ProductManagementSystem.Logic
         /// <returns>Товар с указанным ID или null, если товар не найден</returns>
         public Product? GetProduct(int id)
         {
-            return _products.FirstOrDefault(p => p.Id == id);
+            if (_useRepository)
+            {
+                try
+                {
+                    return _repository.ReadById(id);
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return _products.FirstOrDefault(p => p.Id == id);
+            }
         }
 
         /// <summary>
@@ -63,7 +108,14 @@ namespace ProductManagementSystem.Logic
         /// <returns>Копия списка всех товаров</returns>
         public List<Product> GetAllProducts()
         {
-            return _products.ToList();  // Возвращаем копию списка для безопасности
+            if (_useRepository)
+            {
+                return _repository.ReadAll().ToList();
+            }
+            else
+            {
+                return _products.ToList();  // Возвращаем копию списка для безопасности
+            }
         }
 
         /// <summary>
@@ -73,16 +125,31 @@ namespace ProductManagementSystem.Logic
         /// <returns>true, если товар успешно обновлён; false, если товар не найден</returns>
         public bool UpdateProduct(Product product)
         {
-            var existing = _products.FirstOrDefault(p => p.Id == product.Id);
-            if (existing == null) return false;  // Товар не найден
-            
-            // Обновляем все поля существующего товара
-            existing.Name = product.Name;
-            existing.Description = product.Description;
-            existing.Price = product.Price;
-            existing.Category = product.Category;
-            existing.StockQuantity = product.StockQuantity;
-            return true;
+            if (_useRepository)
+            {
+                try
+                {
+                    _repository.Update(product);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                var existing = _products.FirstOrDefault(p => p.Id == product.Id);
+                if (existing == null) return false;  // Товар не найден
+                
+                // Обновляем все поля существующего товара
+                existing.Name = product.Name;
+                existing.Description = product.Description;
+                existing.Price = product.Price;
+                existing.Category = product.Category;
+                existing.StockQuantity = product.StockQuantity;
+                return true;
+            }
         }
 
         /// <summary>
@@ -92,10 +159,25 @@ namespace ProductManagementSystem.Logic
         /// <returns>true, если товар успешно удалён; false, если товар не найден</returns>
         public bool DeleteProduct(int id)
         {
-            var p = _products.FirstOrDefault(x => x.Id == id);
-            if (p == null) return false;  // Товар не найден
-            _products.Remove(p);  // Удаляем товар из списка
-            return true;
+            if (_useRepository)
+            {
+                try
+                {
+                    _repository.Delete(id);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                var p = _products.FirstOrDefault(x => x.Id == id);
+                if (p == null) return false;  // Товар не найден
+                _products.Remove(p);  // Удаляем товар из списка
+                return true;
+            }
         }
 
         /// <summary>
@@ -106,7 +188,14 @@ namespace ProductManagementSystem.Logic
         /// <returns>Список товаров указанной категории</returns>
         public List<Product> FilterByCategory(string category)
         {
-            return _products.Where(p => p.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (_useRepository)
+            {
+                return _repository.ReadAll().Where((Product p) => p.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+            else
+            {
+                return _products.Where(p => p.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
         }
 
         /// <summary>
@@ -116,7 +205,14 @@ namespace ProductManagementSystem.Logic
         /// <returns>Общая стоимость всех товаров на складе</returns>
         public decimal CalculateTotalInventoryValue()
         {
-            return _products.Sum(p => p.Price * p.StockQuantity);
+            if (_useRepository)
+            {
+                return _repository.ReadAll().Sum((Product p) => p.Price * p.StockQuantity);
+            }
+            else
+            {
+                return _products.Sum(p => p.Price * p.StockQuantity);
+            }
         }
     }
 }
