@@ -53,8 +53,10 @@
                         <TextBlock Text="Категория:" />
                         <ComboBox x:Name="ComboBoxAddCategory" IsEditable="True" Margin="0,0,0,8">
                             <ComboBoxItem Content="Электроника"/>
-                            <ComboBoxItem Content="Одежда"/>
-                            <ComboBoxItem Content="Обувь"/>
+                            <ComboBoxItem Content="Периферия"/>
+                            <ComboBoxItem Content="Аудио"/>
+                            <ComboBoxItem Content="Комплектующие"/>
+                            <ComboBoxItem Content="Аксессуары"/>
                             <ComboBoxItem Content="Разное"/>
                         </ComboBox>
                         
@@ -103,8 +105,10 @@
                         <TextBlock Text="Категория:" />
                         <ComboBox x:Name="ComboBoxEditCategory" IsEditable="True" Margin="0,0,0,5">
                             <ComboBoxItem Content="Электроника"/>
-                            <ComboBoxItem Content="Одежда"/>
-                            <ComboBoxItem Content="Обувь"/>
+                            <ComboBoxItem Content="Периферия"/>
+                            <ComboBoxItem Content="Аудио"/>
+                            <ComboBoxItem Content="Комплектующие"/>
+                            <ComboBoxItem Content="Аксессуары"/>
                             <ComboBoxItem Content="Разное"/>
                         </ComboBox>
                         

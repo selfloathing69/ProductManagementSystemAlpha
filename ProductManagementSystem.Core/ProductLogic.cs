@@ -6,6 +6,72 @@ using ProductManagementSystem.Model;
 namespace ProductManagementSystem.Logic
 {
     /// <summary>
+    /// Статус операции добавления товара.
+    /// </summary>
+    public enum AddProductStatus
+    {
+        /// <summary>Товар успешно добавлен</summary>
+        Success,
+        /// <summary>ID уже существует</summary>
+        DuplicateId,
+        /// <summary>Товар с таким именем и категорией уже существует</summary>
+        DuplicateProduct,
+        /// <summary>Количество товара увеличено путем слияния</summary>
+        Merged,
+        /// <summary>Операция отменена пользователем</summary>
+        Cancelled,
+        /// <summary>Произошла ошибка</summary>
+        Error
+    }
+
+    /// <summary>
+    /// Результат операции добавления товара.
+    /// </summary>
+    public class AddProductResult
+    {
+        /// <summary>Статус операции</summary>
+        public AddProductStatus Status { get; set; }
+        /// <summary>Существующий товар (если найден)</summary>
+        public Product? ExistingProduct { get; set; }
+        /// <summary>Сообщение о результате</summary>
+        public string Message { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Статус операции удаления товара.
+    /// </summary>
+    public enum DeleteProductStatus
+    {
+        /// <summary>Операция завершена успешно</summary>
+        Success,
+        /// <summary>Количество уменьшено</summary>
+        QuantityReduced,
+        /// <summary>Товар удален полностью</summary>
+        DeletedCompletely,
+        /// <summary>Запрошено количество больше имеющегося</summary>
+        QuantityExceeded,
+        /// <summary>Операция отменена</summary>
+        Cancelled,
+        /// <summary>Произошла ошибка</summary>
+        Error
+    }
+
+    /// <summary>
+    /// Результат операции удаления товара.
+    /// </summary>
+    public class DeleteProductResult
+    {
+        /// <summary>Статус операции</summary>
+        public DeleteProductStatus Status { get; set; }
+        /// <summary>Товар, над которым выполнялась операция</summary>
+        public Product? Product { get; set; }
+        /// <summary>Оставшееся количество товара</summary>
+        public int RemainingQuantity { get; set; }
+        /// <summary>Сообщение о результате</summary>
+        public string Message { get; set; } = string.Empty;
+    }
+
+    /// <summary>
     /// Содержит бизнес-логику для управления товарами.
     /// Предоставляет функциональность для создания, чтения, обновления и удаления товаров (CRUD операции),
     /// а также дополнительные бизнес-функции для фильтрации и расчёта общей стоимости склада.
@@ -29,9 +95,15 @@ namespace ProductManagementSystem.Logic
         {
             // Добавление примеров товаров для демонстрации функциональности системы
             AddProduct(new Product { Id = 1, Name = "Ноутбук", Description = "Мощный игровой ноутбук", Price = 75000, Category = "Электроника", StockQuantity = 10 });
-            AddProduct(new Product { Id = 2, Name = "Смартфон", Description = "Флагманский телефон", Price = 85000, Category = "Электроника", StockQuantity = 25 });
-            AddProduct(new Product { Id = 3, Name = "Футболка", Description = "Хлопковая футболка", Price = 1500, Category = "Одежда", StockQuantity = 50 });
-            AddProduct(new Product { Id = 4, Name = "Кроссовки", Description = "Спортивные кроссовки", Price = 6500, Category = "Обувь", StockQuantity = 15 });
+            AddProduct(new Product { Id = 2, Name = "Смартфон iPhone 15 Pro", Description = "Флагманский смартфон Apple", Price = 85000, Category = "Электроника", StockQuantity = 15 });
+            AddProduct(new Product { Id = 3, Name = "Беспроводная мышь Logitech", Description = "Эргономичная беспроводная мышь", Price = 2500, Category = "Периферия", StockQuantity = 50 });
+            AddProduct(new Product { Id = 4, Name = "Механическая клавиатура", Description = "RGB подсветка, Cherry MX switches", Price = 8500, Category = "Периферия", StockQuantity = 20 });
+            AddProduct(new Product { Id = 5, Name = "Монитор Samsung 27\"", Description = "4K монитор с IPS матрицей", Price = 35000, Category = "Электроника", StockQuantity = 10 });
+            AddProduct(new Product { Id = 6, Name = "Наушники Apple AirPods Pro 2", Description = "Премиум наушники с шумоподавлением", Price = 25000, Category = "Аудио", StockQuantity = 8 });
+            AddProduct(new Product { Id = 7, Name = "Веб-камера Logitech C920", Description = "Full HD веб-камера для стриминга", Price = 7500, Category = "Периферия", StockQuantity = 30 });
+            AddProduct(new Product { Id = 8, Name = "SSD Samsung 1TB", Description = "Быстрый твердотельный накопитель", Price = 9500, Category = "Комплектующие", StockQuantity = 40 });
+            AddProduct(new Product { Id = 9, Name = "Игровая мышь Razer", Description = "Высокоточная мышь для геймеров", Price = 6500, Category = "Периферия", StockQuantity = 25 });
+            AddProduct(new Product { Id = 10, Name = "USB Hub 7 портов", Description = "Активный USB 3.0 хаб", Price = 2000, Category = "Аксессуары", StockQuantity = 60 });
         }
 
         /// <summary>
@@ -188,6 +260,156 @@ namespace ProductManagementSystem.Logic
         public List<(int Index, Product Product)> GetProductsWithIndexes()
         {
             return _products.Select((p, index) => (index + 1, p)).ToList();
+        }
+
+        /// <summary>
+        /// Добавляет товар с валидацией и возможностью слияния.
+        /// </summary>
+        /// <param name="product">Товар для добавления</param>
+        /// <param name="allowMerge">Разрешить ли слияние с существующим товаром</param>
+        /// <returns>Результат операции добавления</returns>
+        public AddProductResult AddProductWithValidation(Product product, bool allowMerge)
+        {
+            try
+            {
+                // Проверка существования ID
+                if (IdExists(product.Id))
+                {
+                    var existingById = GetProduct(product.Id);
+                    return new AddProductResult
+                    {
+                        Status = AddProductStatus.DuplicateId,
+                        ExistingProduct = existingById,
+                        Message = $"Товар с ID {product.Id} уже существует"
+                    };
+                }
+
+                // Проверка существования товара с таким же именем и категорией
+                var existingProduct = FindProductByNameAndCategory(product.Name, product.Category);
+                if (existingProduct != null)
+                {
+                    // Не суммируем для категории "Разное"
+                    if (product.Category.Equals("Разное", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Добавляем как новый товар
+                        AddProduct(product);
+                        return new AddProductResult
+                        {
+                            Status = AddProductStatus.Success,
+                            Message = "Товар успешно добавлен"
+                        };
+                    }
+
+                    if (allowMerge)
+                    {
+                        // Суммируем количество
+                        AddQuantityToProduct(existingProduct.Id, product.StockQuantity);
+                        return new AddProductResult
+                        {
+                            Status = AddProductStatus.Merged,
+                            ExistingProduct = existingProduct,
+                            Message = $"Количество увеличено. Новое количество: {existingProduct.StockQuantity}"
+                        };
+                    }
+                    else
+                    {
+                        return new AddProductResult
+                        {
+                            Status = AddProductStatus.DuplicateProduct,
+                            ExistingProduct = existingProduct,
+                            Message = $"Товар с названием '{product.Name}' и категорией '{product.Category}' уже существует"
+                        };
+                    }
+                }
+
+                // Добавляем новый товар
+                AddProduct(product);
+                return new AddProductResult
+                {
+                    Status = AddProductStatus.Success,
+                    Message = "Товар успешно добавлен"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new AddProductResult
+                {
+                    Status = AddProductStatus.Error,
+                    Message = $"Ошибка при добавлении товара: {ex.Message}"
+                };
+            }
+        }
+
+        /// <summary>
+        /// Удаляет указанное количество товара по ID.
+        /// </summary>
+        /// <param name="productId">ID товара</param>
+        /// <param name="quantityToDelete">Количество для удаления (0 = удалить всё)</param>
+        /// <returns>Результат операции удаления</returns>
+        public DeleteProductResult DeleteProductByQuantity(int productId, int quantityToDelete)
+        {
+            try
+            {
+                var product = GetProduct(productId);
+                if (product == null)
+                {
+                    return new DeleteProductResult
+                    {
+                        Status = DeleteProductStatus.Error,
+                        Message = "Товар не найден"
+                    };
+                }
+
+                // Если quantityToDelete = 0, удаляем всё
+                if (quantityToDelete == 0 || quantityToDelete >= product.StockQuantity)
+                {
+                    DeleteProduct(productId);
+                    return new DeleteProductResult
+                    {
+                        Status = DeleteProductStatus.DeletedCompletely,
+                        Product = product,
+                        RemainingQuantity = 0,
+                        Message = "Товар полностью удален"
+                    };
+                }
+
+                if (quantityToDelete < 0)
+                {
+                    return new DeleteProductResult
+                    {
+                        Status = DeleteProductStatus.Error,
+                        Message = "Количество не может быть отрицательным"
+                    };
+                }
+
+                // Уменьшаем количество
+                product.StockQuantity -= quantityToDelete;
+                return new DeleteProductResult
+                {
+                    Status = DeleteProductStatus.QuantityReduced,
+                    Product = product,
+                    RemainingQuantity = product.StockQuantity,
+                    Message = $"Количество уменьшено. Осталось: {product.StockQuantity}"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new DeleteProductResult
+                {
+                    Status = DeleteProductStatus.Error,
+                    Message = $"Ошибка при удалении товара: {ex.Message}"
+                };
+            }
+        }
+
+        /// <summary>
+        /// Получает список товаров для меню удаления.
+        /// </summary>
+        /// <returns>Список товаров с индексами и форматированным описанием</returns>
+        public List<(int Index, Product Product, string DisplayText)> GetProductsForDeletionMenu()
+        {
+            return _products.Select((p, index) => 
+                (index + 1, p, $"{index + 1}. {p.Name}, {p.StockQuantity} шт")).ToList();
         }
     }
 }

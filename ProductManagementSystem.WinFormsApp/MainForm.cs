@@ -191,7 +191,7 @@ namespace ProductManagementSystem.WinFormsApp
                 DropDownStyle = ComboBoxStyle.DropDownList // выбор только из списка, руками не печатаем
             };
             // категории
-            cmbCategory.Items.AddRange(new object[] { "Электроника", "Одежда", "Обувь", "Разное" });
+            cmbCategory.Items.AddRange(new object[] { "Электроника", "Периферия", "Аудио", "Комплектующие", "Аксессуары", "Разное" });
 
             // количество — целое число, тоже без отрицательных значений
             Label lblStock = new Label { Text = "Количество:", Left = 10, Top = 220, Width = 100 };
