@@ -200,7 +200,7 @@ namespace ProductManagementSystem.WinFormsApp
                 Left = 120,
                 Top = 215,
                 Width = 150,
-                Maximum = 100000M, // на всякий случай потолок
+                Maximum = 100000M, // на всякий случай потолок много
                 Minimum = 0M
             };
 
