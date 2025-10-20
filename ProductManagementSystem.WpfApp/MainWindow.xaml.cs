@@ -4,7 +4,8 @@ using ProductManagementSystem.Logic;
 using ProductManagementSystem.Model;
 using System.Collections.Generic;
 using System.Windows.Controls;
-using System; // <--- добавьте эту строку
+using System;
+using ProductManagementSystem.DataAccessLayer.EF; // ← добавьте
 
 namespace ProductManagementSystem.WpfApp
 {
@@ -18,7 +19,7 @@ namespace ProductManagementSystem.WpfApp
         /// <summary>
         /// Экземпляр класса с бизнес-логикой для работы с товарами.
         /// </summary>
-        private ProductLogic _logic = new ProductLogic();
+        private ProductLogic _logic = new ProductLogic(new EntityRepository<Product>());
 
         /// <summary>
         /// Инициализирует новый экземпляр главного окна.

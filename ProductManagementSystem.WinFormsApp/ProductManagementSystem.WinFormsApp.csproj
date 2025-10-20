@@ -7,5 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProductManagementSystem.Core\ProductManagementSystem.Core.csproj" />
+    <ProjectReference Include="..\ProductManagementSystem.DataAccessLayer\ProductManagementSystem.DataAccessLayer.csproj" />
   </ItemGroup>
 </Project>

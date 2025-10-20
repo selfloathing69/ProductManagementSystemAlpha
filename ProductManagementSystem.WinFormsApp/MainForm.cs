@@ -2,6 +2,7 @@ using System;
 using System.Windows.Forms;
 using ProductManagementSystem.Logic;
 using ProductManagementSystem.Model;
+using ProductManagementSystem.DataAccessLayer.EF;
 
 namespace ProductManagementSystem.WinFormsApp
 {
@@ -11,8 +12,8 @@ namespace ProductManagementSystem.WinFormsApp
     public partial class MainForm : Form
     {
         // бизнес-логика: все операции с товарами держим в отдельном классе, чтобы форма не пухла
-        private ProductLogic _logic = new ProductLogic();
-
+        private ProductLogic _logic = new ProductLogic(new EntityRepository<Product>());
+        
         // таблица со списком товаров (автогенерит колонки из свойств модели)
         private DataGridView dataGridView;
 
@@ -156,14 +157,14 @@ namespace ProductManagementSystem.WinFormsApp
             Label lblId = new Label { Text = "ID:", Left = 10, Top = 45, Width = 100 };
             numId = new NumericUpDown { Left = 120, Top = 40, Width = 150, Minimum = 1M, Maximum = 999999M };
 
-            // поле «Название» — обычный TextBox, но ниже ограничим ввод русскими символами
+            // поле «Название» — обычный TextBox, разрешаем RU/EN буквы, цифры и базовые знаки
             Label lblName = new Label { Text = "Название:", Left = 10, Top = 80, Width = 100 };
             txtName = new TextBox { Left = 120, Top = 75, Width = 300 };
-            // разрешаем только русские буквы (и пробел/дефис), чтобы не было латиницы и цифр
+            // фильтрация обновлена: разрешены русские и английские буквы, цифры, пробел и распространённые символы
             txtName.KeyPress += RussianOnly_KeyPress;
             txtName.TextChanged += RussianOnly_TextChanged;
 
-            // поле «Описание» — по тем же правилам, только русские плюс пробел/дефис
+            // поле «Описание» — по тем же правилам, разрешаем RU/EN + базовые символы
             Label lblDesc = new Label { Text = "Описание:", Left = 10, Top = 115, Width = 100 };
             txtDescription = new TextBox { Left = 120, Top = 110, Width = 300 };
             txtDescription.KeyPress += RussianOnly_KeyPress;
@@ -422,13 +423,13 @@ namespace ProductManagementSystem.WinFormsApp
         }
 
         /// <summary>
-        /// проверяет, является ли символ русской буквой или допустимым разделителем (пробел/дефис)
+        /// проверяет, является ли символ допустимым для имени/описания
         /// </summary>
         private static bool IsRussianLetterOrSeparator(char c)
         {
-            // русские буквы: А-Я (0410-042F), а-я (0430-044F), Ё (0401), ё (0451)
-            // плюс пробел и дефис — этого обычно хватает для названий
-            return (c >= '\u0410' && c <= '\u044F') || c == '\u0401' || c == '\u0451' || c == ' ' || c == '-';
+            // Разрешаем русские и английские буквы, цифры, пробелы и базовые символы пунктуации
+            if (char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)) return true;
+            return c == '-' || c == '_' || c == '\'' || c == '.' || c == ',' || c == '(' || c == ')' || c == '/' || c == '\\' || c == '+' || c == ':' || c == '#';
         }
 
         /// <summary>

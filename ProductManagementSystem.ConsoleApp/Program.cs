@@ -1,6 +1,7 @@
 using System;
 using ProductManagementSystem.Logic;
 using ProductManagementSystem.Model;
+using ProductManagementSystem.DataAccessLayer.EF; // ← добавьте
 
 namespace ProductManagementSystem.ConsoleApp
 {
@@ -14,7 +15,7 @@ namespace ProductManagementSystem.ConsoleApp
         /// <summary>
         /// Экземпляр класса с бизнес-логикой для работы с товарами.
         /// </summary>
-        private static ProductLogic _productLogic = new ProductLogic();
+        private static ProductLogic _productLogic = new ProductLogic(new EntityRepository<Product>());
         
         /// <summary>
         /// Главная точка входа в консольное приложение.
