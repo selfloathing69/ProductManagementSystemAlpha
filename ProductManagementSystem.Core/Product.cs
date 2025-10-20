@@ -6,7 +6,7 @@ namespace ProductManagementSystem.Model
     /// Представляет товар в системе управления товарами.
     /// Содержит основную информацию о товаре: идентификатор, название, описание, цену, категорию и количество на складе.
     /// </summary>
-    public class Product
+    public class Product : IDomainObject
     {
         /// <summary>
         /// Уникальный идентификатор товара.
