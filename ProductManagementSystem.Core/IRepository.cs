@@ -1,6 +1,6 @@
 using ProductManagementSystem.Model;
 
-namespace ProductManagementSystem.DataAccessLayer
+namespace ProductManagementSystem.Logic
 {
     /// <summary>
     /// Интерфейс репозитория для работы с доменными объектами.

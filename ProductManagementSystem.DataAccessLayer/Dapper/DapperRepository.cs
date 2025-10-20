@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Data.SqlClient;
 using Dapper;
 using ProductManagementSystem.Model;
+using ProductManagementSystem.Logic;
 
 namespace ProductManagementSystem.DataAccessLayer.Dapper
 {

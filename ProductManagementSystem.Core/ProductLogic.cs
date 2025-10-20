@@ -79,7 +79,12 @@ namespace ProductManagementSystem.Logic
     public class ProductLogic
     {
         /// <summary>
-        /// Список всех товаров в системе.
+        /// Репозиторий для работы с товарами в базе данных.
+        /// </summary>
+        private readonly IRepository<Product>? _repository;
+        
+        /// <summary>
+        /// Локальный список товаров (используется если репозиторий не задан).
         /// </summary>
         private List<Product> _products = new List<Product>();
         
@@ -89,9 +94,35 @@ namespace ProductManagementSystem.Logic
         private int _nextNumber = 1;
 
         /// <summary>
-        /// Инициализирует новый экземпляр класса ProductLogic и заполняет его примерами товаров.
+        /// Инициализирует новый экземпляр класса ProductLogic без репозитория (использует локальный список).
         /// </summary>
-        public ProductLogic()
+        public ProductLogic() : this(null)
+        {
+        }
+
+        /// <summary>
+        /// Инициализирует новый экземпляр класса ProductLogic с указанным репозиторием.
+        /// </summary>
+        /// <param name="repository">Репозиторий для работы с товарами (null для использования локального списка)</param>
+        public ProductLogic(IRepository<Product>? repository)
+        {
+            _repository = repository;
+            
+            // Инициализация данных
+            if (_repository != null)
+            {
+                InitializeDataIfEmpty();
+            }
+            else
+            {
+                InitializeLocalData();
+            }
+        }
+
+        /// <summary>
+        /// Инициализирует локальный список примерами товаров.
+        /// </summary>
+        private void InitializeLocalData()
         {
             // Добавление примеров товаров для демонстрации функциональности системы
             AddProduct(new Product { Id = 1, Name = "Ноутбук", Description = "Мощный игровой ноутбук", Price = 75000, Category = "Электроника", StockQuantity = 10 });
@@ -107,15 +138,61 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
+        /// Инициализирует базу данных примерами товаров, если она пуста.
+        /// </summary>
+        private void InitializeDataIfEmpty()
+        {
+            try
+            {
+                var existingProducts = _repository!.ReadAll().ToList();
+                
+                // Если база данных пуста, добавляем примеры товаров
+                if (!existingProducts.Any())
+                {
+                    AddProduct(new Product { Id = 0, Name = "Ноутбук", Description = "Мощный игровой ноутбук", Price = 75000, Category = "Электроника", StockQuantity = 10 });
+                    AddProduct(new Product { Id = 0, Name = "Смартфон iPhone 15 Pro", Description = "Флагманский смартфон Apple", Price = 85000, Category = "Электроника", StockQuantity = 15 });
+                    AddProduct(new Product { Id = 0, Name = "Беспроводная мышь Logitech", Description = "Эргономичная беспроводная мышь", Price = 2500, Category = "Периферия", StockQuantity = 50 });
+                    AddProduct(new Product { Id = 0, Name = "Механическая клавиатура", Description = "RGB подсветка, Cherry MX switches", Price = 8500, Category = "Периферия", StockQuantity = 20 });
+                    AddProduct(new Product { Id = 0, Name = "Монитор Samsung 27\"", Description = "4K монитор с IPS матрицей", Price = 35000, Category = "Электроника", StockQuantity = 10 });
+                    AddProduct(new Product { Id = 0, Name = "Наушники Apple AirPods Pro 2", Description = "Премиум наушники с шумоподавлением", Price = 25000, Category = "Аудио", StockQuantity = 8 });
+                    AddProduct(new Product { Id = 0, Name = "Веб-камера Logitech C920", Description = "Full HD веб-камера для стриминга", Price = 7500, Category = "Периферия", StockQuantity = 30 });
+                    AddProduct(new Product { Id = 0, Name = "SSD Samsung 1TB", Description = "Быстрый твердотельный накопитель", Price = 9500, Category = "Комплектующие", StockQuantity = 40 });
+                    AddProduct(new Product { Id = 0, Name = "Игровая мышь Razer", Description = "Высокоточная мышь для геймеров", Price = 6500, Category = "Периферия", StockQuantity = 25 });
+                    AddProduct(new Product { Id = 0, Name = "USB Hub 7 портов", Description = "Активный USB 3.0 хаб", Price = 2000, Category = "Аксессуары", StockQuantity = 60 });
+                }
+                else
+                {
+                    // Обновляем счётчик на основе максимального номера в базе
+                    var maxNumber = existingProducts.Max(p => p.Number);
+                    _nextNumber = maxNumber + 1;
+                }
+            }
+            catch
+            {
+                // Если база данных недоступна, используем пустой список
+                // Ошибки будут обработаны при следующих операциях
+            }
+        }
+
+        /// <summary>
         /// Добавляет новый товар в систему.
-        /// Присваивает внутренний номер товару, ID должен быть предварительно установлен.
+        /// Присваивает внутренний номер товару, ID будет присвоен базой данных.
         /// </summary>
         /// <param name="product">Товар для добавления</param>
-        /// <returns>Добавленный товар с присвоенным номером</returns>
+        /// <returns>Добавленный товар с присвоенным номером и ID</returns>
         public Product AddProduct(Product product)
         {
             product.Number = _nextNumber++;  // Присваиваем уникальный внутренний номер и увеличиваем счётчик
-            _products.Add(product);  // Добавляем товар в список
+            
+            if (_repository != null)
+            {
+                _repository.Add(product);  // Добавляем товар в базу данных, ID присваивается автоматически
+            }
+            else
+            {
+                _products.Add(product);  // Добавляем товар в локальный список
+            }
+            
             return product;
         }
 
@@ -126,16 +203,30 @@ namespace ProductManagementSystem.Logic
         /// <returns>Товар с указанным ID или null, если товар не найден</returns>
         public Product? GetProduct(int id)
         {
-            return _products.FirstOrDefault(p => p.Id == id);
+            if (_repository != null)
+            {
+                return _repository.ReadById(id);
+            }
+            else
+            {
+                return _products.FirstOrDefault(p => p.Id == id);
+            }
         }
 
         /// <summary>
         /// Получает список всех товаров в системе.
         /// </summary>
-        /// <returns>Копия списка всех товаров</returns>
+        /// <returns>Список всех товаров</returns>
         public List<Product> GetAllProducts()
         {
-            return _products.ToList();  // Возвращаем копию списка для безопасности
+            if (_repository != null)
+            {
+                return _repository.ReadAll().ToList();
+            }
+            else
+            {
+                return _products.ToList();
+            }
         }
 
         /// <summary>
@@ -145,16 +236,30 @@ namespace ProductManagementSystem.Logic
         /// <returns>true, если товар успешно обновлён; false, если товар не найден</returns>
         public bool UpdateProduct(Product product)
         {
-            var existing = _products.FirstOrDefault(p => p.Id == product.Id);
-            if (existing == null) return false;  // Товар не найден
-            
-            // Обновляем все поля существующего товара
-            existing.Name = product.Name;
-            existing.Description = product.Description;
-            existing.Price = product.Price;
-            existing.Category = product.Category;
-            existing.StockQuantity = product.StockQuantity;
-            return true;
+            try
+            {
+                if (_repository != null)
+                {
+                    _repository.Update(product);
+                    return true;
+                }
+                else
+                {
+                    var existing = _products.FirstOrDefault(p => p.Id == product.Id);
+                    if (existing == null) return false;
+                    
+                    existing.Name = product.Name;
+                    existing.Description = product.Description;
+                    existing.Price = product.Price;
+                    existing.Category = product.Category;
+                    existing.StockQuantity = product.StockQuantity;
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -164,10 +269,25 @@ namespace ProductManagementSystem.Logic
         /// <returns>true, если товар успешно удалён; false, если товар не найден</returns>
         public bool DeleteProduct(int id)
         {
-            var p = _products.FirstOrDefault(x => x.Id == id);
-            if (p == null) return false;  // Товар не найден
-            _products.Remove(p);  // Удаляем товар из списка
-            return true;
+            try
+            {
+                if (_repository != null)
+                {
+                    _repository.Delete(id);
+                    return true;
+                }
+                else
+                {
+                    var p = _products.FirstOrDefault(x => x.Id == id);
+                    if (p == null) return false;
+                    _products.Remove(p);
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -178,7 +298,18 @@ namespace ProductManagementSystem.Logic
         /// <returns>Список товаров указанной категории</returns>
         public List<Product> FilterByCategory(string category)
         {
-            return _products.Where(p => p.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (_repository != null)
+            {
+                return _repository.ReadAll()
+                    .Where(p => p.Category.Equals(category, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+            else
+            {
+                return _products
+                    .Where(p => p.Category.Equals(category, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
         }
 
         /// <summary>
@@ -188,7 +319,14 @@ namespace ProductManagementSystem.Logic
         /// <returns>Общая стоимость всех товаров на складе</returns>
         public decimal CalculateTotalInventoryValue()
         {
-            return _products.Sum(p => p.Price * p.StockQuantity);
+            if (_repository != null)
+            {
+                return _repository.ReadAll().Sum(p => p.Price * p.StockQuantity);
+            }
+            else
+            {
+                return _products.Sum(p => p.Price * p.StockQuantity);
+            }
         }
 
         /// <summary>
@@ -198,7 +336,14 @@ namespace ProductManagementSystem.Logic
         /// <returns>true, если товар с таким ID существует</returns>
         public bool IdExists(int id)
         {
-            return _products.Any(p => p.Id == id);
+            if (_repository != null)
+            {
+                return _repository.ReadById(id) != null;
+            }
+            else
+            {
+                return _products.Any(p => p.Id == id);
+            }
         }
 
         /// <summary>
@@ -209,9 +354,18 @@ namespace ProductManagementSystem.Logic
         /// <returns>Товар с такими же названием и категорией или null</returns>
         public Product? FindProductByNameAndCategory(string name, string category)
         {
-            return _products.FirstOrDefault(p => 
-                p.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && 
-                p.Category.Equals(category, StringComparison.OrdinalIgnoreCase));
+            if (_repository != null)
+            {
+                return _repository.ReadAll().FirstOrDefault(p => 
+                    p.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && 
+                    p.Category.Equals(category, StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                return _products.FirstOrDefault(p => 
+                    p.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && 
+                    p.Category.Equals(category, StringComparison.OrdinalIgnoreCase));
+            }
         }
 
         /// <summary>
@@ -259,7 +413,14 @@ namespace ProductManagementSystem.Logic
         /// <returns>Список кортежей (номер, товар)</returns>
         public List<(int Index, Product Product)> GetProductsWithIndexes()
         {
-            return _products.Select((p, index) => (index + 1, p)).ToList();
+            if (_repository != null)
+            {
+                return _repository.ReadAll().Select((p, index) => (index + 1, p)).ToList();
+            }
+            else
+            {
+                return _products.Select((p, index) => (index + 1, p)).ToList();
+            }
         }
 
         /// <summary>
@@ -408,8 +569,16 @@ namespace ProductManagementSystem.Logic
         /// <returns>Список товаров с индексами и форматированным описанием</returns>
         public List<(int Index, Product Product, string DisplayText)> GetProductsForDeletionMenu()
         {
-            return _products.Select((p, index) => 
-                (index + 1, p, $"{index + 1}. {p.Name}, {p.StockQuantity} шт")).ToList();
+            if (_repository != null)
+            {
+                return _repository.ReadAll().Select((p, index) => 
+                    (index + 1, p, $"{index + 1}. {p.Name}, {p.StockQuantity} шт")).ToList();
+            }
+            else
+            {
+                return _products.Select((p, index) => 
+                    (index + 1, p, $"{index + 1}. {p.Name}, {p.StockQuantity} шт")).ToList();
+            }
         }
     }
 }

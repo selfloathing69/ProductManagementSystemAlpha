@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ProductManagementSystem.Model;
+using ProductManagementSystem.Logic;
 
 namespace ProductManagementSystem.DataAccessLayer.EF
 {
