@@ -54,18 +54,39 @@ namespace ProductManagementSystem.DataAccessLayer.Dapper
                     connection.Open();
                     
                     // Получаем все свойства, кроме Id (для автоинкремента)
+                    // Важно: всегда исключаем Id, даже если он задан
                     var properties = typeof(T).GetProperties()
-                        .Where(p => p.Name != "Id" && p.CanWrite)
+                        .Where(p => p.Name != "Id" && p.CanWrite && p.CanRead)
                         .ToArray();
+                    
+                    if (properties.Length == 0)
+                    {
+                        throw new Exception("Не найдено свойств для вставки");
+                    }
                     
                     var propertyNames = string.Join(", ", properties.Select(p => p.Name));
                     var propertyParams = string.Join(", ", properties.Select(p => "@" + p.Name));
                     
-                    var query = $"INSERT INTO {_tableName} ({propertyNames}) VALUES ({propertyParams}); SELECT CAST(SCOPE_IDENTITY() as int)";
+                    // Используем более надежный способ получения последнего ID
+                    var query = $"INSERT INTO {_tableName} ({propertyNames}) VALUES ({propertyParams}); SELECT CAST(SCOPE_IDENTITY() as int);";
                     
-                    var id = connection.QuerySingle<int>(query, entity);
+                    // Создаем параметры только для нужных свойств
+                    var parameters = new DynamicParameters();
+                    foreach (var prop in properties)
+                    {
+                        parameters.Add("@" + prop.Name, prop.GetValue(entity));
+                    }
+                    
+                    var id = connection.ExecuteScalar<int>(query, parameters);
+                    
+                    // Устанавливаем полученный ID
                     entity.Id = id;
                 }
+            }
+            catch (SqlException sqlEx)
+            {
+                // Более детальная информация об ошибке SQL
+                throw new Exception($"Ошибка SQL при добавлении записи в таблицу {_tableName}: {sqlEx.Message}", sqlEx);
             }
             catch (Exception ex)
             {
@@ -163,19 +184,37 @@ namespace ProductManagementSystem.DataAccessLayer.Dapper
                     
                     // Получаем все свойства, кроме Id
                     var properties = typeof(T).GetProperties()
-                        .Where(p => p.Name != "Id" && p.CanWrite)
+                        .Where(p => p.Name != "Id" && p.CanWrite && p.CanRead)
                         .ToArray();
+                    
+                    if (properties.Length == 0)
+                    {
+                        throw new Exception("Не найдено свойств для обновления");
+                    }
                     
                     var setClause = string.Join(", ", properties.Select(p => $"{p.Name} = @{p.Name}"));
                     
                     var query = $"UPDATE {_tableName} SET {setClause} WHERE Id = @Id";
-                    var rowsAffected = connection.Execute(query, entity);
+                    
+                    // Создаем параметры для всех свойств включая Id
+                    var parameters = new DynamicParameters();
+                    parameters.Add("@Id", entity.Id);
+                    foreach (var prop in properties)
+                    {
+                        parameters.Add("@" + prop.Name, prop.GetValue(entity));
+                    }
+                    
+                    var rowsAffected = connection.Execute(query, parameters);
                     
                     if (rowsAffected == 0)
                     {
                         throw new Exception($"Запись с ID={entity.Id} не найдена");
                     }
                 }
+            }
+            catch (SqlException sqlEx)
+            {
+                throw new Exception($"Ошибка SQL при обновлении записи с ID={entity.Id} в таблице {_tableName}: {sqlEx.Message}", sqlEx);
             }
             catch (Exception ex)
             {

@@ -2,7 +2,6 @@ using System;
 using ProductManagementSystem.DataAccessLayer.EF;
 using ProductManagementSystem.DataAccessLayer.Dapper;
 using ProductManagementSystem.Logic;
-using ProductManagementSystem.Model;
 
 namespace ProductManagementSystem.DataAccessLayer.Examples
 {
@@ -21,7 +20,7 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
             try
             {
                 // Создание репозитория Entity Framework
-                IRepository<Product> efRepository = new EntityRepository<Product>();
+                IRepository<Model.Product> efRepository = new EntityRepository<Model.Product>();
                 
                 // Создание экземпляра ProductLogic с EF репозиторием
                 var productLogic = new ProductLogic(efRepository);
@@ -29,7 +28,7 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
                 Console.WriteLine("Репозиторий Entity Framework создан и готов к использованию.");
                 
                 // Пример добавления товара
-                var newProduct = new Product
+                var newProduct = new Model.Product
                 {
                     Id = 0, // ID будет назначен автоматически базой данных
                     Name = "Тестовый товар (EF)",
@@ -66,7 +65,7 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
             try
             {
                 // Создание репозитория Dapper
-                IRepository<Product> dapperRepository = new DapperRepository<Product>();
+                IRepository<Model.Product> dapperRepository = new DapperRepository<Model.Product>();
                 
                 // Создание экземпляра ProductLogic с Dapper репозиторием
                 var productLogic = new ProductLogic(dapperRepository);
@@ -74,7 +73,7 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
                 Console.WriteLine("Репозиторий Dapper создан и готов к использованию.");
                 
                 // Пример добавления товара
-                var newProduct = new Product
+                var newProduct = new Model.Product
                 {
                     Id = 0, // ID будет назначен автоматически
                     Name = "Тестовый товар (Dapper)",
@@ -113,7 +112,7 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
             try
             {
                 // Создание Dapper репозитория с пользовательской строкой подключения
-                var dapperRepository = new DapperRepository<Product>(customConnectionString);
+                var dapperRepository = new DapperRepository<Model.Product>(customConnectionString);
                 var productLogic = new ProductLogic(dapperRepository);
                 
                 Console.WriteLine("Репозиторий с пользовательской строкой подключения создан.");
@@ -136,12 +135,12 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
             
             try
             {
-                IRepository<Product> repository = new EntityRepository<Product>();
+                IRepository<Model.Product> repository = new EntityRepository<Model.Product>();
                 var productLogic = new ProductLogic(repository);
                 
                 // CREATE - Создание
                 Console.WriteLine("\n1. CREATE - Создание товара");
-                var product = new Product
+                var product = new Model.Product
                 {
                     Id = 0,
                     Name = "CRUD Test Product",

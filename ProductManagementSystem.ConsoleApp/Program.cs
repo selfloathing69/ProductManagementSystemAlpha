@@ -1,7 +1,5 @@
 using System;
 using ProductManagementSystem.Logic;
-using ProductManagementSystem.Model;
-using ProductManagementSystem.DataAccessLayer.EF; // ← добавьте
 
 namespace ProductManagementSystem.ConsoleApp
 {
@@ -14,8 +12,9 @@ namespace ProductManagementSystem.ConsoleApp
     {
         /// <summary>
         /// Экземпляр класса с бизнес-логикой для работы с товарами.
+        /// Для переключения между Entity Framework и Dapper, измените константу в RepositoryFactory.cs
         /// </summary>
-        private static ProductLogic _productLogic = new ProductLogic(new EntityRepository<Product>());
+        private static ProductLogic _productLogic = new ProductLogic(RepositoryFactory.CreateRepository());
         
         /// <summary>
         /// Главная точка входа в консольное приложение.
@@ -127,7 +126,7 @@ namespace ProductManagementSystem.ConsoleApp
         static void AddProduct()
         {
             Console.WriteLine("===== Добавление нового товара =====");
-            var prod = new Product();
+            var prod = new ProductManagementSystem.Model.Product();
             
             // Ввод названия товара
             Console.Write("Название: "); 

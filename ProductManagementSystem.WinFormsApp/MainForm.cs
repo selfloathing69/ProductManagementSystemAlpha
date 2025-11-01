@@ -1,8 +1,6 @@
 using System;
 using System.Windows.Forms;
 using ProductManagementSystem.Logic;
-using ProductManagementSystem.Model;
-using ProductManagementSystem.DataAccessLayer.EF;
 
 namespace ProductManagementSystem.WinFormsApp
 {
@@ -12,8 +10,9 @@ namespace ProductManagementSystem.WinFormsApp
     public partial class MainForm : Form
     {
         // бизнес-логика: все операции с товарами держим в отдельном классе, чтобы форма не пухла
-        private ProductLogic _logic = new ProductLogic(new EntityRepository<Product>());
-        
+        // Для переключения между Entity Framework и Dapper, измените константу в RepositoryFactory.cs
+        private ProductLogic _logic = new ProductLogic(RepositoryFactory.CreateRepository());
+
         // таблица со списком товаров (автогенерит колонки из свойств модели)
         private DataGridView dataGridView;
 
@@ -50,7 +49,7 @@ namespace ProductManagementSystem.WinFormsApp
         private void InitializeComponent()
         {
             // базовые настройки окна: заголовок, размеры и позиционирование
-            this.Text = "Система управления товарами - Windows Forms";
+            this.Text = "Система управления товарами - Windows Forms :)";
             this.Width = 1280;
             this.Height = 720;
             this.MinimumSize = new System.Drawing.Size(1280, 720);
@@ -157,12 +156,10 @@ namespace ProductManagementSystem.WinFormsApp
             Label lblId = new Label { Text = "ID:", Left = 10, Top = 45, Width = 100 };
             numId = new NumericUpDown { Left = 120, Top = 40, Width = 150, Minimum = 1M, Maximum = 999999M };
 
-            // поле «Название» — обычный TextBox, разрешаем RU/EN буквы, цифры и базовые знаки
+         
             Label lblName = new Label { Text = "Название:", Left = 10, Top = 80, Width = 100 };
             txtName = new TextBox { Left = 120, Top = 75, Width = 300 };
-            // фильтрация обновлена: разрешены русские и английские буквы, цифры, пробел и распространённые символы
-            txtName.KeyPress += RussianOnly_KeyPress;
-            txtName.TextChanged += RussianOnly_TextChanged;
+            
 
             // поле «Описание» — по тем же правилам, разрешаем RU/EN + базовые символы
             Label lblDesc = new Label { Text = "Описание:", Left = 10, Top = 115, Width = 100 };
@@ -336,8 +333,8 @@ namespace ProductManagementSystem.WinFormsApp
                     }
                 }
 
-                // собираем товар из полей — ничего хитрого, всё по модели
-                var product = new Product
+                // собираем товар из полей
+                var product = new ProductManagementSystem.Model.Product
                 {
                     Id = id,
                     Name = txtName.Text.Trim(),

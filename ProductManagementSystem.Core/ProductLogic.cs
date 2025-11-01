@@ -6,109 +6,109 @@ using ProductManagementSystem.Model;
 namespace ProductManagementSystem.Logic
 {
     /// <summary>
-    /// РЎС‚Р°С‚СѓСЃ РѕРїРµСЂР°С†РёРё РґРѕР±Р°РІР»РµРЅРёСЏ С‚РѕРІР°СЂР°.
+    /// Статус операции добавления товара.
     /// </summary>
     public enum AddProductStatus
     {
-        /// <summary>РўРѕРІР°СЂ СѓСЃРїРµС€РЅРѕ РґРѕР±Р°РІР»РµРЅ</summary>
+        /// <summary>Товар успешно добавлен</summary>
         Success,
-        /// <summary>ID СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚</summary>
+        /// <summary>ID уже существует</summary>
         DuplicateId,
-        /// <summary>РўРѕРІР°СЂ СЃ С‚Р°РєРёРј РёРјРµРЅРµРј Рё РєР°С‚РµРіРѕСЂРёРµР№ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚</summary>
+        /// <summary>Товар с таким именем и категорией уже существует</summary>
         DuplicateProduct,
-        /// <summary>РљРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕРІР°СЂР° СѓРІРµР»РёС‡РµРЅРѕ РїСѓС‚РµРј СЃР»РёСЏРЅРёСЏ</summary>
+        /// <summary>Количество товара увеличено путем слияния</summary>
         Merged,
-        /// <summary>РћРїРµСЂР°С†РёСЏ РѕС‚РјРµРЅРµРЅР° РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј</summary>
+        /// <summary>Операция отменена пользователем</summary>
         Cancelled,
-        /// <summary>РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР°</summary>
+        /// <summary>Произошла ошибка</summary>
         Error
     }
 
     /// <summary>
-    /// Р РµР·СѓР»СЊС‚Р°С‚ РѕРїРµСЂР°С†РёРё РґРѕР±Р°РІР»РµРЅРёСЏ С‚РѕРІР°СЂР°.
+    /// Результат операции добавления товара.
     /// </summary>
     public class AddProductResult
     {
-        /// <summary>РЎС‚Р°С‚СѓСЃ РѕРїРµСЂР°С†РёРё</summary>
+        /// <summary>Статус операции</summary>
         public AddProductStatus Status { get; set; }
-        /// <summary>РЎСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ С‚РѕРІР°СЂ (РµСЃР»Рё РЅР°Р№РґРµРЅ)</summary>
+        /// <summary>Существующий товар (если найден)</summary>
         public Product? ExistingProduct { get; set; }
-        /// <summary>РЎРѕРѕР±С‰РµРЅРёРµ Рѕ СЂРµР·СѓР»СЊС‚Р°С‚Рµ</summary>
+        /// <summary>Сообщение о результате</summary>
         public string Message { get; set; } = string.Empty;
     }
 
     /// <summary>
-    /// РЎС‚Р°С‚СѓСЃ РѕРїРµСЂР°С†РёРё СѓРґР°Р»РµРЅРёСЏ С‚РѕРІР°СЂР°.
+    /// Статус операции удаления товара.
     /// </summary>
     public enum DeleteProductStatus
     {
-        /// <summary>РћРїРµСЂР°С†РёСЏ Р·Р°РІРµСЂС€РµРЅР° СѓСЃРїРµС€РЅРѕ</summary>
+        /// <summary>Операция завершена успешно</summary>
         Success,
-        /// <summary>РљРѕР»РёС‡РµСЃС‚РІРѕ СѓРјРµРЅСЊС€РµРЅРѕ</summary>
+        /// <summary>Количество уменьшено</summary>
         QuantityReduced,
-        /// <summary>РўРѕРІР°СЂ СѓРґР°Р»РµРЅ РїРѕР»РЅРѕСЃС‚СЊСЋ</summary>
+        /// <summary>Товар удален полностью</summary>
         DeletedCompletely,
-        /// <summary>Р—Р°РїСЂРѕС€РµРЅРѕ РєРѕР»РёС‡РµСЃС‚РІРѕ Р±РѕР»СЊС€Рµ РёРјРµСЋС‰РµРіРѕСЃСЏ</summary>
+        /// <summary>Запрошено количество больше имеющегося</summary>
         QuantityExceeded,
-        /// <summary>РћРїРµСЂР°С†РёСЏ РѕС‚РјРµРЅРµРЅР°</summary>
+        /// <summary>Операция отменена</summary>
         Cancelled,
-        /// <summary>РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР°</summary>
+        /// <summary>Произошла ошибка</summary>
         Error
     }
 
     /// <summary>
-    /// Р РµР·СѓР»СЊС‚Р°С‚ РѕРїРµСЂР°С†РёРё СѓРґР°Р»РµРЅРёСЏ С‚РѕРІР°СЂР°.
+    /// Результат операции удаления товара.
     /// </summary>
     public class DeleteProductResult
     {
-        /// <summary>РЎС‚Р°С‚СѓСЃ РѕРїРµСЂР°С†РёРё</summary>
+        /// <summary>Статус операции</summary>
         public DeleteProductStatus Status { get; set; }
-        /// <summary>РўРѕРІР°СЂ, РЅР°Рґ РєРѕС‚РѕСЂС‹Рј РІС‹РїРѕР»РЅСЏР»Р°СЃСЊ РѕРїРµСЂР°С†РёСЏ</summary>
+        /// <summary>Товар, над которым выполнялась операция</summary>
         public Product? Product { get; set; }
-        /// <summary>РћСЃС‚Р°РІС€РµРµСЃСЏ РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕРІР°СЂР°</summary>
+        /// <summary>Оставшееся количество товара</summary>
         public int RemainingQuantity { get; set; }
-        /// <summary>РЎРѕРѕР±С‰РµРЅРёРµ Рѕ СЂРµР·СѓР»СЊС‚Р°С‚Рµ</summary>
+        /// <summary>Сообщение о результате</summary>
         public string Message { get; set; } = string.Empty;
     }
 
     /// <summary>
-    /// РЎРѕРґРµСЂР¶РёС‚ Р±РёР·РЅРµСЃ-Р»РѕРіРёРєСѓ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ С‚РѕРІР°СЂР°РјРё.
-    /// РџСЂРµРґРѕСЃС‚Р°РІР»СЏРµС‚ С„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅРѕСЃС‚СЊ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ, С‡С‚РµРЅРёСЏ, РѕР±РЅРѕРІР»РµРЅРёСЏ Рё СѓРґР°Р»РµРЅРёСЏ С‚РѕРІР°СЂРѕРІ (CRUD РѕРїРµСЂР°С†РёРё),
-    /// Р° С‚Р°РєР¶Рµ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ Р±РёР·РЅРµСЃ-С„СѓРЅРєС†РёРё РґР»СЏ С„РёР»СЊС‚СЂР°С†РёРё Рё СЂР°СЃС‡С‘С‚Р° РѕР±С‰РµР№ СЃС‚РѕРёРјРѕСЃС‚Рё СЃРєР»Р°РґР°.
+    /// Содержит бизнес-логику для управления товарами.
+    /// Предоставляет функциональность для создания, чтения, обновления и удаления товаров (CRUD операции),
+    /// а также дополнительные бизнес-функции для фильтрации и расчёта общей стоимости склада.
     /// </summary>
     public class ProductLogic
     {
         /// <summary>
-        /// Р РµРїРѕР·РёС‚РѕСЂРёР№ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ С‚РѕРІР°СЂР°РјРё РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С….
+        /// Репозиторий для работы с товарами в базе данных.
         /// </summary>
         private readonly IRepository<Product>? _repository;
         
         /// <summary>
-        /// Р›РѕРєР°Р»СЊРЅС‹Р№ СЃРїРёСЃРѕРє С‚РѕРІР°СЂРѕРІ (РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РµСЃР»Рё СЂРµРїРѕР·РёС‚РѕСЂРёР№ РЅРµ Р·Р°РґР°РЅ).
+        /// Локальный список товаров (используется если репозиторий не задан).
         /// </summary>
         private List<Product> _products = new List<Product>();
         
         /// <summary>
-        /// РЎС‡С‘С‚С‡РёРє РґР»СЏ РіРµРЅРµСЂР°С†РёРё СѓРЅРёРєР°Р»СЊРЅС‹С… РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРІ С‚РѕРІР°СЂРѕРІ РїСЂРё СЂР°Р±РѕС‚Рµ СЃ Р»РѕРєР°Р»СЊРЅС‹Рј СЃРїРёСЃРєРѕРј.
+        /// Счётчик для генерации уникальных идентификаторов товаров при работе с локальным списком.
         /// </summary>
         private int _nextId = 1;
 
         /// <summary>
-        /// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РЅРѕРІС‹Р№ СЌРєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° ProductLogic Р±РµР· СЂРµРїРѕР·РёС‚РѕСЂРёСЏ (РёСЃРїРѕР»СЊР·СѓРµС‚ Р»РѕРєР°Р»СЊРЅС‹Р№ СЃРїРёСЃРѕРє).
+        /// Инициализирует новый экземпляр класса ProductLogic без репозитория (использует локальный список).
         /// </summary>
         public ProductLogic() : this(null)
         {
         }
 
         /// <summary>
-        /// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РЅРѕРІС‹Р№ СЌРєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° ProductLogic СЃ СѓРєР°Р·Р°РЅРЅС‹Рј СЂРµРїРѕР·РёС‚РѕСЂРёРµРј.
+        /// Инициализирует новый экземпляр класса ProductLogic с указанным репозиторием.
         /// </summary>
-        /// <param name="repository">Р РµРїРѕР·РёС‚РѕСЂРёР№ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ С‚РѕРІР°СЂР°РјРё (null РґР»СЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ Р»РѕРєР°Р»СЊРЅРѕРіРѕ СЃРїРёСЃРєР°)</param>
+        /// <param name="repository">Репозиторий для работы с товарами (null для использования локального списка)</param>
         public ProductLogic(IRepository<Product>? repository)
         {
             _repository = repository;
             
-            // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґР°РЅРЅС‹С…
+            // Инициализация данных
             if (_repository != null)
             {
                 InitializeDataIfEmpty();
@@ -120,25 +120,25 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ Р»РѕРєР°Р»СЊРЅС‹Р№ СЃРїРёСЃРѕРє РїСЂРёРјРµСЂР°РјРё С‚РѕРІР°СЂРѕРІ.
+        /// Инициализирует локальный список примерами товаров.
         /// </summary>
         private void InitializeLocalData()
         {
-            // Р”РѕР±Р°РІР»РµРЅРёРµ РїСЂРёРјРµСЂРѕРІ С‚РѕРІР°СЂРѕРІ РґР»СЏ РґРµРјРѕРЅСЃС‚СЂР°С†РёРё С„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅРѕСЃС‚Рё СЃРёСЃС‚РµРјС‹
-            AddProduct(new Product { Id = 0, Name = "РќРѕСѓС‚Р±СѓРє", Description = "РњРѕС‰РЅС‹Р№ РёРіСЂРѕРІРѕР№ РЅРѕСѓС‚Р±СѓРє", Price = 75000, Category = "Р­Р»РµРєС‚СЂРѕРЅРёРєР°", StockQuantity = 10 });
-            AddProduct(new Product { Id = 0, Name = "РЎРјР°СЂС‚С„РѕРЅ iPhone 15 Pro", Description = "Р¤Р»Р°РіРјР°РЅСЃРєРёР№ СЃРјР°СЂС‚С„РѕРЅ Apple", Price = 85000, Category = "Р­Р»РµРєС‚СЂРѕРЅРёРєР°", StockQuantity = 15 });
-            AddProduct(new Product { Id = 0, Name = "Р‘РµСЃРїСЂРѕРІРѕРґРЅР°СЏ РјС‹С€СЊ Logitech", Description = "Р­СЂРіРѕРЅРѕРјРёС‡РЅР°СЏ Р±РµСЃРїСЂРѕРІРѕРґРЅР°СЏ РјС‹С€СЊ", Price = 2500, Category = "РџРµСЂРёС„РµСЂРёСЏ", StockQuantity = 50 });
-            AddProduct(new Product { Id = 0, Name = "РњРµС…Р°РЅРёС‡РµСЃРєР°СЏ РєР»Р°РІРёР°С‚СѓСЂР°", Description = "RGB РїРѕРґСЃРІРµС‚РєР°, Cherry MX switches", Price = 8500, Category = "РџРµСЂРёС„РµСЂРёСЏ", StockQuantity = 20 });
-            AddProduct(new Product { Id = 0, Name = "РњРѕРЅРёС‚РѕСЂ Samsung 27\"", Description = "4K РјРѕРЅРёС‚РѕСЂ СЃ IPS РјР°С‚СЂРёС†РµР№", Price = 35000, Category = "Р­Р»РµРєС‚СЂРѕРЅРёРєР°", StockQuantity = 10 });
-            AddProduct(new Product { Id = 0, Name = "РќР°СѓС€РЅРёРєРё Apple AirPods Pro 2", Description = "РџСЂРµРјРёСѓРј РЅР°СѓС€РЅРёРєРё СЃ С€СѓРјРѕРїРѕРґР°РІР»РµРЅРёРµРј", Price = 25000, Category = "РђСѓРґРёРѕ", StockQuantity = 8 });
-            AddProduct(new Product { Id = 0, Name = "Р’РµР±-РєР°РјРµСЂР° Logitech C920", Description = "Full HD РІРµР±-РєР°РјРµСЂР° РґР»СЏ СЃС‚СЂРёРјРёРЅРіР°", Price = 7500, Category = "РџРµСЂРёС„РµСЂРёСЏ", StockQuantity = 30 });
-            AddProduct(new Product { Id = 0, Name = "SSD Samsung 1TB", Description = "Р‘С‹СЃС‚СЂС‹Р№ С‚РІРµСЂРґРѕС‚РµР»СЊРЅС‹Р№ РЅР°РєРѕРїРёС‚РµР»СЊ", Price = 9500, Category = "РљРѕРјРїР»РµРєС‚СѓСЋС‰РёРµ", StockQuantity = 40 });
-            AddProduct(new Product { Id = 0, Name = "РРіСЂРѕРІР°СЏ РјС‹С€СЊ Razer", Description = "Р’С‹СЃРѕРєРѕС‚РѕС‡РЅР°СЏ РјС‹С€СЊ РґР»СЏ РіРµР№РјРµСЂРѕРІ", Price = 6500, Category = "РџРµСЂРёС„РµСЂРёСЏ", StockQuantity = 25 });
-            AddProduct(new Product { Id = 0, Name = "USB Hub 7 РїРѕСЂС‚РѕРІ", Description = "РђРєС‚РёРІРЅС‹Р№ USB 3.0 С…Р°Р±", Price = 2000, Category = "РђРєСЃРµСЃСЃСѓР°СЂС‹", StockQuantity = 60 });
+            // Добавление примеров товаров для демонстрации функциональности системы
+            AddProduct(new Product { Id = 0, Name = "Ноутбук", Description = "Мощный игровой ноутбук", Price = 75000, Category = "Электроника", StockQuantity = 10 });
+            AddProduct(new Product { Id = 0, Name = "Смартфон iPhone 15 Pro", Description = "Флагманский смартфон Apple", Price = 85000, Category = "Электроника", StockQuantity = 15 });
+            AddProduct(new Product { Id = 0, Name = "Беспроводная мышь Logitech", Description = "Эргономичная беспроводная мышь", Price = 2500, Category = "Периферия", StockQuantity = 50 });
+            AddProduct(new Product { Id = 0, Name = "Механическая клавиатура", Description = "RGB подсветка, Cherry MX switches", Price = 8500, Category = "Периферия", StockQuantity = 20 });
+            AddProduct(new Product { Id = 0, Name = "Монитор Samsung 27\"", Description = "4K монитор с IPS матрицей", Price = 35000, Category = "Электроника", StockQuantity = 10 });
+            AddProduct(new Product { Id = 0, Name = "Наушники Apple AirPods Pro 2", Description = "Премиум наушники с шумоподавлением", Price = 25000, Category = "Аудио", StockQuantity = 8 });
+            AddProduct(new Product { Id = 0, Name = "Веб-камера Logitech C920", Description = "Full HD веб-камера для стриминга", Price = 7500, Category = "Периферия", StockQuantity = 30 });
+            AddProduct(new Product { Id = 0, Name = "SSD Samsung 1TB", Description = "Быстрый твердотельный накопитель", Price = 9500, Category = "Комплектующие", StockQuantity = 40 });
+            AddProduct(new Product { Id = 0, Name = "Игровая мышь Razer", Description = "Высокоточная мышь для геймеров", Price = 6500, Category = "Периферия", StockQuantity = 25 });
+            AddProduct(new Product { Id = 0, Name = "USB Hub 7 портов", Description = "Активный USB 3.0 хаб", Price = 2000, Category = "Аксессуары", StockQuantity = 60 });
         }
 
         /// <summary>
-        /// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ Р±Р°Р·Сѓ РґР°РЅРЅС‹С… РїСЂРёРјРµСЂР°РјРё С‚РѕРІР°СЂРѕРІ, РµСЃР»Рё РѕРЅР° РїСѓСЃС‚Р°.
+        /// Инициализирует базу данных примерами товаров, если она пуста.
         /// </summary>
         private void InitializeDataIfEmpty()
         {
@@ -146,50 +146,50 @@ namespace ProductManagementSystem.Logic
             {
                 var existingProducts = _repository!.ReadAll().ToList();
                 
-                // Р•СЃР»Рё Р±Р°Р·Р° РґР°РЅРЅС‹С… РїСѓСЃС‚Р°, РґРѕР±Р°РІР»СЏРµРј РїСЂРёРјРµСЂС‹ С‚РѕРІР°СЂРѕРІ
+                // Если база данных пуста, добавляем примеры товаров
                 if (!existingProducts.Any())
                 {
-                    AddProduct(new Product { Id = 0, Name = "РќРѕСѓС‚Р±СѓРє", Description = "РњРѕС‰РЅС‹Р№ РёРіСЂРѕРІРѕР№ РЅРѕСѓС‚Р±СѓРє", Price = 75000, Category = "Р­Р»РµРєС‚СЂРѕРЅРёРєР°", StockQuantity = 10 });
-                    AddProduct(new Product { Id = 0, Name = "РЎРјР°СЂС‚С„РѕРЅ iPhone 15 Pro", Description = "Р¤Р»Р°РіРјР°РЅСЃРєРёР№ СЃРјР°СЂС‚С„РѕРЅ Apple", Price = 85000, Category = "Р­Р»РµРєС‚СЂРѕРЅРёРєР°", StockQuantity = 15 });
-                    AddProduct(new Product { Id = 0, Name = "Р‘РµСЃРїСЂРѕРІРѕРґРЅР°СЏ РјС‹С€СЊ Logitech", Description = "Р­СЂРіРѕРЅРѕРјРёС‡РЅР°СЏ Р±РµСЃРїСЂРѕРІРѕРґРЅР°СЏ РјС‹С€СЊ", Price = 2500, Category = "РџРµСЂРёС„РµСЂРёСЏ", StockQuantity = 50 });
-                    AddProduct(new Product { Id = 0, Name = "РњРµС…Р°РЅРёС‡РµСЃРєР°СЏ РєР»Р°РІРёР°С‚СѓСЂР°", Description = "RGB РїРѕРґСЃРІРµС‚РєР°, Cherry MX switches", Price = 8500, Category = "РџРµСЂРёС„РµСЂРёСЏ", StockQuantity = 20 });
-                    AddProduct(new Product { Id = 0, Name = "РњРѕРЅРёС‚РѕСЂ Samsung 27\"", Description = "4K РјРѕРЅРёС‚РѕСЂ СЃ IPS РјР°С‚СЂРёС†РµР№", Price = 35000, Category = "Р­Р»РµРєС‚СЂРѕРЅРёРєР°", StockQuantity = 10 });
-                    AddProduct(new Product { Id = 0, Name = "РќР°СѓС€РЅРёРєРё Apple AirPods Pro 2", Description = "РџСЂРµРјРёСѓРј РЅР°СѓС€РЅРёРєРё СЃ С€СѓРјРѕРїРѕРґР°РІР»РµРЅРёРµРј", Price = 25000, Category = "РђСѓРґРёРѕ", StockQuantity = 8 });
-                    AddProduct(new Product { Id = 0, Name = "Р’РµР±-РєР°РјРµСЂР° Logitech C920", Description = "Full HD РІРµР±-РєР°РјРµСЂР° РґР»СЏ СЃС‚СЂРёРјРёРЅРіР°", Price = 7500, Category = "РџРµСЂРёС„РµСЂРёСЏ", StockQuantity = 30 });
-                    AddProduct(new Product { Id = 0, Name = "SSD Samsung 1TB", Description = "Р‘С‹СЃС‚СЂС‹Р№ С‚РІРµСЂРґРѕС‚РµР»СЊРЅС‹Р№ РЅР°РєРѕРїРёС‚РµР»СЊ", Price = 9500, Category = "РљРѕРјРїР»РµРєС‚СѓСЋС‰РёРµ", StockQuantity = 40 });
-                    AddProduct(new Product { Id = 0, Name = "РРіСЂРѕРІР°СЏ РјС‹С€СЊ Razer", Description = "Р’С‹СЃРѕРєРѕС‚РѕС‡РЅР°СЏ РјС‹С€СЊ РґР»СЏ РіРµР№РјРµСЂРѕРІ", Price = 6500, Category = "РџРµСЂРёС„РµСЂРёСЏ", StockQuantity = 25 });
-                    AddProduct(new Product { Id = 0, Name = "USB Hub 7 РїРѕСЂС‚РѕРІ", Description = "РђРєС‚РёРІРЅС‹Р№ USB 3.0 С…Р°Р±", Price = 2000, Category = "РђРєСЃРµСЃСЃСѓР°СЂС‹", StockQuantity = 60 });
+                    AddProduct(new Product { Id = 0, Name = "Ноутбук", Description = "Мощный игровой ноутбук", Price = 75000, Category = "Электроника", StockQuantity = 10 });
+                    AddProduct(new Product { Id = 0, Name = "Смартфон iPhone 15 Pro", Description = "Флагманский смартфон Apple", Price = 85000, Category = "Электроника", StockQuantity = 15 });
+                    AddProduct(new Product { Id = 0, Name = "Беспроводная мышь Logitech", Description = "Эргономичная беспроводная мышь", Price = 2500, Category = "Периферия", StockQuantity = 50 });
+                    AddProduct(new Product { Id = 0, Name = "Механическая клавиатура", Description = "RGB подсветка, Cherry MX switches", Price = 8500, Category = "Периферия", StockQuantity = 20 });
+                    AddProduct(new Product { Id = 0, Name = "Монитор Samsung 27\"", Description = "4K монитор с IPS матрицей", Price = 35000, Category = "Электроника", StockQuantity = 10 });
+                    AddProduct(new Product { Id = 0, Name = "Наушники Apple AirPods Pro 2", Description = "Премиум наушники с шумоподавлением", Price = 25000, Category = "Аудио", StockQuantity = 8 });
+                    AddProduct(new Product { Id = 0, Name = "Веб-камера Logitech C920", Description = "Full HD веб-камера для стриминга", Price = 7500, Category = "Периферия", StockQuantity = 30 });
+                    AddProduct(new Product { Id = 0, Name = "SSD Samsung 1TB", Description = "Быстрый твердотельный накопитель", Price = 9500, Category = "Комплектующие", StockQuantity = 40 });
+                    AddProduct(new Product { Id = 0, Name = "Игровая мышь Razer", Description = "Высокоточная мышь для геймеров", Price = 6500, Category = "Периферия", StockQuantity = 25 });
+                    AddProduct(new Product { Id = 0, Name = "USB Hub 7 портов", Description = "Активный USB 3.0 хаб", Price = 2000, Category = "Аксессуары", StockQuantity = 60 });
                 }
                 else
                 {
-                    // РћР±РЅРѕРІР»СЏРµРј СЃС‡С‘С‚С‡РёРє РЅР° РѕСЃРЅРѕРІРµ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ ID РІ Р±Р°Р·Рµ
+                    // Обновляем счётчик на основе максимального ID в базе
                     var maxId = existingProducts.Max(p => p.Id);
                     _nextId = maxId + 1;
                 }
             }
             catch
             {
-                // Р•СЃР»Рё Р±Р°Р·Р° РґР°РЅРЅС‹С… РЅРµРґРѕСЃС‚СѓРїРЅР°, РёСЃРїРѕР»СЊР·СѓРµРј РїСѓСЃС‚РѕР№ СЃРїРёСЃРѕРє
-                // РћС€РёР±РєРё Р±СѓРґСѓС‚ РѕР±СЂР°Р±РѕС‚Р°РЅС‹ РїСЂРё СЃР»РµРґСѓСЋС‰РёС… РѕРїРµСЂР°С†РёСЏС…
+                // Если база данных недоступна, используем пустой список
+                // Ошибки будут обработаны при следующих операциях
             }
         }
 
         /// <summary>
-        /// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ С‚РѕРІР°СЂ РІ СЃРёСЃС‚РµРјСѓ.
-        /// ID Р±СѓРґРµС‚ РїСЂРёСЃРІРѕРµРЅ Р±Р°Р·РѕР№ РґР°РЅРЅС‹С… Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё (РµСЃР»Рё РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ СЂРµРїРѕР·РёС‚РѕСЂРёР№) РёР»Рё РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ Р»РѕРєР°Р»СЊРЅРѕ.
+        /// Добавляет новый товар в систему.
+        /// ID будет присвоен базой данных автоматически (если используется репозиторий) или генерируется локально.
         /// </summary>
-        /// <param name="product">РўРѕРІР°СЂ РґР»СЏ РґРѕР±Р°РІР»РµРЅРёСЏ</param>
-        /// <returns>Р”РѕР±Р°РІР»РµРЅРЅС‹Р№ С‚РѕРІР°СЂ СЃ РїСЂРёСЃРІРѕРµРЅРЅС‹Рј ID</returns>
+        /// <param name="product">Товар для добавления</param>
+        /// <returns>Добавленный товар с присвоенным ID</returns>
         public Product AddProduct(Product product)
         {
             if (_repository != null)
             {
-                // Р•СЃР»Рё Id РЅРµ Р·Р°РґР°РЅ (0), Р±Р°Р·Р° РґР°РЅРЅС‹С… РїСЂРёСЃРІРѕРёС‚ РµРіРѕ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё
+                // Если Id не задан (0), база данных присвоит его автоматически
                 _repository.Add(product);
             }
             else
             {
-                // Р”Р»СЏ Р»РѕРєР°Р»СЊРЅРѕРіРѕ СЃРїРёСЃРєР° РіРµРЅРµСЂРёСЂСѓРµРј ID СЃР°РјРё
+                // Для локального списка генерируем ID сами
                 if (product.Id == 0)
                 {
                     product.Id = _nextId++;
@@ -201,10 +201,10 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// РџРѕР»СѓС‡Р°РµС‚ С‚РѕРІР°СЂ РїРѕ РµРіРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ.
+        /// Получает товар по его идентификатору.
         /// </summary>
-        /// <param name="id">РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ С‚РѕРІР°СЂР°</param>
-        /// <returns>РўРѕРІР°СЂ СЃ СѓРєР°Р·Р°РЅРЅС‹Рј ID РёР»Рё null, РµСЃР»Рё С‚РѕРІР°СЂ РЅРµ РЅР°Р№РґРµРЅ</returns>
+        /// <param name="id">Идентификатор товара</param>
+        /// <returns>Товар с указанным ID или null, если товар не найден</returns>
         public Product? GetProduct(int id)
         {
             if (_repository != null)
@@ -218,9 +218,9 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє РІСЃРµС… С‚РѕРІР°СЂРѕРІ РІ СЃРёСЃС‚РµРјРµ.
+        /// Получает список всех товаров в системе.
         /// </summary>
-        /// <returns>РЎРїРёСЃРѕРє РІСЃРµС… С‚РѕРІР°СЂРѕРІ</returns>
+        /// <returns>Список всех товаров</returns>
         public List<Product> GetAllProducts()
         {
             if (_repository != null)
@@ -234,10 +234,10 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// РћР±РЅРѕРІР»СЏРµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРј С‚РѕРІР°СЂРµ.
+        /// Обновляет информацию о существующем товаре.
         /// </summary>
-        /// <param name="product">РўРѕРІР°СЂ СЃ РѕР±РЅРѕРІР»С‘РЅРЅРѕР№ РёРЅС„РѕСЂРјР°С†РёРµР№</param>
-        /// <returns>true, РµСЃР»Рё С‚РѕРІР°СЂ СѓСЃРїРµС€РЅРѕ РѕР±РЅРѕРІР»С‘РЅ; false, РµСЃР»Рё С‚РѕРІР°СЂ РЅРµ РЅР°Р№РґРµРЅ</returns>
+        /// <param name="product">Товар с обновлённой информацией</param>
+        /// <returns>true, если товар успешно обновлён; false, если товар не найден</returns>
         public bool UpdateProduct(Product product)
         {
             try
@@ -267,10 +267,10 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// РЈРґР°Р»СЏРµС‚ С‚РѕРІР°СЂ РёР· СЃРёСЃС‚РµРјС‹ РїРѕ РµРіРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ.
+        /// Удаляет товар из системы по его идентификатору.
         /// </summary>
-        /// <param name="id">РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ С‚РѕРІР°СЂР° РґР»СЏ СѓРґР°Р»РµРЅРёСЏ</param>
-        /// <returns>true, РµСЃР»Рё С‚РѕРІР°СЂ СѓСЃРїРµС€РЅРѕ СѓРґР°Р»С‘РЅ; false, РµСЃР»Рё С‚РѕРІР°СЂ РЅРµ РЅР°Р№РґРµРЅ</returns>
+        /// <param name="id">Идентификатор товара для удаления</param>
+        /// <returns>true, если товар успешно удалён; false, если товар не найден</returns>
         public bool DeleteProduct(int id)
         {
             try
@@ -295,11 +295,11 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// Р¤РёР»СЊС‚СЂСѓРµС‚ С‚РѕРІР°СЂС‹ РїРѕ РєР°С‚РµРіРѕСЂРёРё (Р±РёР·РЅРµСЃ-С„СѓРЅРєС†РёСЏ).
-        /// РџРѕРёСЃРє РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ Р±РµР· СѓС‡С‘С‚Р° СЂРµРіРёСЃС‚СЂР°.
+        /// Фильтрует товары по категории (бизнес-функция).
+        /// Поиск выполняется без учёта регистра.
         /// </summary>
-        /// <param name="category">РќР°Р·РІР°РЅРёРµ РєР°С‚РµРіРѕСЂРёРё РґР»СЏ С„РёР»СЊС‚СЂР°С†РёРё</param>
-        /// <returns>РЎРїРёСЃРѕРє С‚РѕРІР°СЂРѕРІ СѓРєР°Р·Р°РЅРЅРѕР№ РєР°С‚РµРіРѕСЂРёРё</returns>
+        /// <param name="category">Название категории для фильтрации</param>
+        /// <returns>Список товаров указанной категории</returns>
         public List<Product> FilterByCategory(string category)
         {
             if (_repository != null)
@@ -317,10 +317,10 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// Р Р°СЃСЃС‡РёС‚С‹РІР°РµС‚ РѕР±С‰СѓСЋ СЃС‚РѕРёРјРѕСЃС‚СЊ РІСЃРµС… С‚РѕРІР°СЂРѕРІ РЅР° СЃРєР»Р°РґРµ (Р±РёР·РЅРµСЃ-С„СѓРЅРєС†РёСЏ).
-        /// РЈС‡РёС‚С‹РІР°РµС‚ С†РµРЅСѓ С‚РѕРІР°СЂР° Рё РµРіРѕ РєРѕР»РёС‡РµСЃС‚РІРѕ РЅР° СЃРєР»Р°РґРµ.
+        /// Рассчитывает общую стоимость всех товаров на складе (бизнес-функция).
+        /// Учитывает цену товара и его количество на складе.
         /// </summary>
-        /// <returns>РћР±С‰Р°СЏ СЃС‚РѕРёРјРѕСЃС‚СЊ РІСЃРµС… С‚РѕРІР°СЂРѕРІ РЅР° СЃРєР»Р°РґРµ</returns>
+        /// <returns>Общая стоимость всех товаров на складе</returns>
         public decimal CalculateTotalInventoryValue()
         {
             if (_repository != null)
@@ -334,10 +334,10 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё С‚РѕРІР°СЂ СЃ СѓРєР°Р·Р°РЅРЅС‹Рј ID.
+        /// Проверяет, существует ли товар с указанным ID.
         /// </summary>
-        /// <param name="id">ID РґР»СЏ РїСЂРѕРІРµСЂРєРё</param>
-        /// <returns>true, РµСЃР»Рё С‚РѕРІР°СЂ СЃ С‚Р°РєРёРј ID СЃСѓС‰РµСЃС‚РІСѓРµС‚</returns>
+        /// <param name="id">ID для проверки</param>
+        /// <returns>true, если товар с таким ID существует</returns>
         public bool IdExists(int id)
         {
             if (_repository != null)
@@ -351,11 +351,11 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// РќР°С…РѕРґРёС‚ С‚РѕРІР°СЂ СЃ С‚Р°РєРёРј Р¶Рµ РЅР°Р·РІР°РЅРёРµРј Рё РєР°С‚РµРіРѕСЂРёРµР№.
+        /// Находит товар с таким же названием и категорией.
         /// </summary>
-        /// <param name="name">РќР°Р·РІР°РЅРёРµ С‚РѕРІР°СЂР°</param>
-        /// <param name="category">РљР°С‚РµРіРѕСЂРёСЏ С‚РѕРІР°СЂР°</param>
-        /// <returns>РўРѕРІР°СЂ СЃ С‚Р°РєРёРјРё Р¶Рµ РЅР°Р·РІР°РЅРёРµРј Рё РєР°С‚РµРіРѕСЂРёРµР№ РёР»Рё null</returns>
+        /// <param name="name">Название товара</param>
+        /// <param name="category">Категория товара</param>
+        /// <returns>Товар с такими же названием и категорией или null</returns>
         public Product? FindProductByNameAndCategory(string name, string category)
         {
             if (_repository != null)
@@ -373,11 +373,11 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// РЈРІРµР»РёС‡РёРІР°РµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕРІР°СЂР° РЅР° СѓРєР°Р·Р°РЅРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ.
+        /// Увеличивает количество товара на указанное значение.
         /// </summary>
-        /// <param name="id">ID С‚РѕРІР°СЂР°</param>
-        /// <param name="quantity">РљРѕР»РёС‡РµСЃС‚РІРѕ РґР»СЏ РґРѕР±Р°РІР»РµРЅРёСЏ</param>
-        /// <returns>true, РµСЃР»Рё РѕРїРµСЂР°С†РёСЏ СѓСЃРїРµС€РЅР°</returns>
+        /// <param name="id">ID товара</param>
+        /// <param name="quantity">Количество для добавления</param>
+        /// <returns>true, если операция успешна</returns>
         public bool AddQuantityToProduct(int id, int quantity)
         {
             var product = GetProduct(id);
@@ -388,12 +388,12 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// РЈРјРµРЅСЊС€Р°РµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕРІР°СЂР° РЅР° СѓРєР°Р·Р°РЅРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ.
-        /// Р•СЃР»Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃС‚Р°РЅРѕРІРёС‚СЃСЏ <= 0, С‚РѕРІР°СЂ СѓРґР°Р»СЏРµС‚СЃСЏ.
+        /// Уменьшает количество товара на указанное значение.
+        /// Если количество становится <= 0, товар удаляется.
         /// </summary>
-        /// <param name="id">ID С‚РѕРІР°СЂР°</param>
-        /// <param name="quantityToRemove">РљРѕР»РёС‡РµСЃС‚РІРѕ РґР»СЏ СѓРґР°Р»РµРЅРёСЏ</param>
-        /// <returns>true, РµСЃР»Рё РѕРїРµСЂР°С†РёСЏ СѓСЃРїРµС€РЅР°</returns>
+        /// <param name="id">ID товара</param>
+        /// <param name="quantityToRemove">Количество для удаления</param>
+        /// <returns>true, если операция успешна</returns>
         public bool RemoveQuantityFromProduct(int id, int quantityToRemove)
         {
             var product = GetProduct(id);
@@ -401,7 +401,7 @@ namespace ProductManagementSystem.Logic
             
             if (quantityToRemove >= product.StockQuantity)
             {
-                // Р•СЃР»Рё СѓРґР°Р»СЏРµРј РІСЃС‘ РёР»Рё Р±РѕР»СЊС€Рµ - СѓРґР°Р»СЏРµРј С‚РѕРІР°СЂ РїРѕР»РЅРѕСЃС‚СЊСЋ
+                // Если удаляем всё или больше - удаляем товар полностью
                 return DeleteProduct(id);
             }
             else
@@ -412,9 +412,9 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє РІСЃРµС… С‚РѕРІР°СЂРѕРІ СЃ РёС… РїРѕСЂСЏРґРєРѕРІС‹РјРё РЅРѕРјРµСЂР°РјРё РґР»СЏ РІС‹Р±РѕСЂР°.
+        /// Получает список всех товаров с их порядковыми номерами для выбора.
         /// </summary>
-        /// <returns>РЎРїРёСЃРѕРє РєРѕСЂС‚РµР¶РµР№ (РЅРѕРјРµСЂ, С‚РѕРІР°СЂ)</returns>
+        /// <returns>Список кортежей (номер, товар)</returns>
         public List<(int Index, Product Product)> GetProductsWithIndexes()
         {
             if (_repository != null)
@@ -428,16 +428,16 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// Р”РѕР±Р°РІР»СЏРµС‚ С‚РѕРІР°СЂ СЃ РІР°Р»РёРґР°С†РёРµР№ Рё РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊСЋ СЃР»РёСЏРЅРёСЏ.
+        /// Добавляет товар с валидацией и возможностью слияния.
         /// </summary>
-        /// <param name="product">РўРѕРІР°СЂ РґР»СЏ РґРѕР±Р°РІР»РµРЅРёСЏ</param>
-        /// <param name="allowMerge">Р Р°Р·СЂРµС€РёС‚СЊ Р»Рё СЃР»РёСЏРЅРёРµ СЃ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРј С‚РѕРІР°СЂРѕРј</param>
-        /// <returns>Р РµР·СѓР»СЊС‚Р°С‚ РѕРїРµСЂР°С†РёРё РґРѕР±Р°РІР»РµРЅРёСЏ</returns>
+        /// <param name="product">Товар для добавления</param>
+        /// <param name="allowMerge">Разрешить ли слияние с существующим товаром</param>
+        /// <returns>Результат операции добавления</returns>
         public AddProductResult AddProductWithValidation(Product product, bool allowMerge)
         {
             try
             {
-                // РџСЂРѕРІРµСЂРєР° СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёСЏ ID
+                // Проверка существования ID
                 if (IdExists(product.Id))
                 {
                     var existingById = GetProduct(product.Id);
@@ -445,35 +445,35 @@ namespace ProductManagementSystem.Logic
                     {
                         Status = AddProductStatus.DuplicateId,
                         ExistingProduct = existingById,
-                        Message = $"РўРѕРІР°СЂ СЃ ID {product.Id} СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚"
+                        Message = $"Товар с ID {product.Id} уже существует"
                     };
                 }
 
-                // РџСЂРѕРІРµСЂРєР° СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёСЏ С‚РѕРІР°СЂР° СЃ С‚Р°РєРёРј Р¶Рµ РёРјРµРЅРµРј Рё РєР°С‚РµРіРѕСЂРёРµР№
+                // Проверка существования товара с таким же именем и категорией
                 var existingProduct = FindProductByNameAndCategory(product.Name, product.Category);
                 if (existingProduct != null)
                 {
-                    // РќРµ СЃСѓРјРјРёСЂСѓРµРј РґР»СЏ РєР°С‚РµРіРѕСЂРёРё "Р Р°Р·РЅРѕРµ"
-                    if (product.Category.Equals("Р Р°Р·РЅРѕРµ", StringComparison.OrdinalIgnoreCase))
+                    // Не суммируем для категории "Разное"
+                    if (product.Category.Equals("Разное", StringComparison.OrdinalIgnoreCase))
                     {
-                        // Р”РѕР±Р°РІР»СЏРµРј РєР°Рє РЅРѕРІС‹Р№ С‚РѕРІР°СЂ
+                        // Добавляем как новый товар
                         AddProduct(product);
                         return new AddProductResult
                         {
                             Status = AddProductStatus.Success,
-                            Message = "РўРѕРІР°СЂ СѓСЃРїРµС€РЅРѕ РґРѕР±Р°РІР»РµРЅ"
+                            Message = "Товар успешно добавлен"
                         };
                     }
 
                     if (allowMerge)
                     {
-                        // РЎСѓРјРјРёСЂСѓРµРј РєРѕР»РёС‡РµСЃС‚РІРѕ
+                        // Суммируем количество
                         AddQuantityToProduct(existingProduct.Id, product.StockQuantity);
                         return new AddProductResult
                         {
                             Status = AddProductStatus.Merged,
                             ExistingProduct = existingProduct,
-                            Message = $"РљРѕР»РёС‡РµСЃС‚РІРѕ СѓРІРµР»РёС‡РµРЅРѕ. РќРѕРІРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ: {existingProduct.StockQuantity}"
+                            Message = $"Количество увеличено. Новое количество: {existingProduct.StockQuantity}"
                         };
                     }
                     else
@@ -482,17 +482,17 @@ namespace ProductManagementSystem.Logic
                         {
                             Status = AddProductStatus.DuplicateProduct,
                             ExistingProduct = existingProduct,
-                            Message = $"РўРѕРІР°СЂ СЃ РЅР°Р·РІР°РЅРёРµРј '{product.Name}' Рё РєР°С‚РµРіРѕСЂРёРµР№ '{product.Category}' СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚"
+                            Message = $"Товар с названием '{product.Name}' и категорией '{product.Category}' уже существует"
                         };
                     }
                 }
 
-                // Р”РѕР±Р°РІР»СЏРµРј РЅРѕРІС‹Р№ С‚РѕРІР°СЂ
+                // Добавляем новый товар
                 AddProduct(product);
                 return new AddProductResult
                 {
                     Status = AddProductStatus.Success,
-                    Message = "РўРѕРІР°СЂ СѓСЃРїРµС€РЅРѕ РґРѕР±Р°РІР»РµРЅ"
+                    Message = "Товар успешно добавлен"
                 };
             }
             catch (Exception ex)
@@ -500,17 +500,17 @@ namespace ProductManagementSystem.Logic
                 return new AddProductResult
                 {
                     Status = AddProductStatus.Error,
-                    Message = $"РћС€РёР±РєР° РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё С‚РѕРІР°СЂР°: {ex.Message}"
+                    Message = $"Ошибка при добавлении товара: {ex.Message}"
                 };
             }
         }
 
         /// <summary>
-        /// РЈРґР°Р»СЏРµС‚ СѓРєР°Р·Р°РЅРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕРІР°СЂР° РїРѕ ID.
+        /// Удаляет указанное количество товара по ID.
         /// </summary>
-        /// <param name="productId">ID С‚РѕРІР°СЂР°</param>
-        /// <param name="quantityToDelete">РљРѕР»РёС‡РµСЃС‚РІРѕ РґР»СЏ СѓРґР°Р»РµРЅРёСЏ (0 = СѓРґР°Р»РёС‚СЊ РІСЃС‘)</param>
-        /// <returns>Р РµР·СѓР»СЊС‚Р°С‚ РѕРїРµСЂР°С†РёРё СѓРґР°Р»РµРЅРёСЏ</returns>
+        /// <param name="productId">ID товара</param>
+        /// <param name="quantityToDelete">Количество для удаления (0 = удалить всё)</param>
+        /// <returns>Результат операции удаления</returns>
         public DeleteProductResult DeleteProductByQuantity(int productId, int quantityToDelete)
         {
             try
@@ -521,11 +521,11 @@ namespace ProductManagementSystem.Logic
                     return new DeleteProductResult
                     {
                         Status = DeleteProductStatus.Error,
-                        Message = "РўРѕРІР°СЂ РЅРµ РЅР°Р№РґРµРЅ"
+                        Message = "Товар не найден"
                     };
                 }
 
-                // Р•СЃР»Рё quantityToDelete = 0, СѓРґР°Р»СЏРµРј РІСЃС‘
+                // Если quantityToDelete = 0, удаляем всё
                 if (quantityToDelete == 0 || quantityToDelete >= product.StockQuantity)
                 {
                     DeleteProduct(productId);
@@ -534,7 +534,7 @@ namespace ProductManagementSystem.Logic
                         Status = DeleteProductStatus.DeletedCompletely,
                         Product = product,
                         RemainingQuantity = 0,
-                        Message = "РўРѕРІР°СЂ РїРѕР»РЅРѕСЃС‚СЊСЋ СѓРґР°Р»РµРЅ"
+                        Message = "Товар полностью удален"
                     };
                 }
 
@@ -543,18 +543,18 @@ namespace ProductManagementSystem.Logic
                     return new DeleteProductResult
                     {
                         Status = DeleteProductStatus.Error,
-                        Message = "РљРѕР»РёС‡РµСЃС‚РІРѕ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Рј"
+                        Message = "Количество не может быть отрицательным"
                     };
                 }
 
-                // РЈРјРµРЅСЊС€Р°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ
+                // Уменьшаем количество
                 product.StockQuantity -= quantityToDelete;
                 return new DeleteProductResult
                 {
                     Status = DeleteProductStatus.QuantityReduced,
                     Product = product,
                     RemainingQuantity = product.StockQuantity,
-                    Message = $"РљРѕР»РёС‡РµСЃС‚РІРѕ СѓРјРµРЅСЊС€РµРЅРѕ. РћСЃС‚Р°Р»РѕСЃСЊ: {product.StockQuantity}"
+                    Message = $"Количество уменьшено. Осталось: {product.StockQuantity}"
                 };
             }
             catch (Exception ex)
@@ -562,26 +562,26 @@ namespace ProductManagementSystem.Logic
                 return new DeleteProductResult
                 {
                     Status = DeleteProductStatus.Error,
-                    Message = $"РћС€РёР±РєР° РїСЂРё СѓРґР°Р»РµРЅРёРё С‚РѕРІР°СЂР°: {ex.Message}"
+                    Message = $"Ошибка при удалении товара: {ex.Message}"
                 };
             }
         }
 
         /// <summary>
-        /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє С‚РѕРІР°СЂРѕРІ РґР»СЏ РјРµРЅСЋ СѓРґР°Р»РµРЅРёСЏ.
+        /// Получает список товаров для меню удаления.
         /// </summary>
-        /// <returns>РЎРїРёСЃРѕРє С‚РѕРІР°СЂРѕРІ СЃ РёРЅРґРµРєСЃР°РјРё Рё С„РѕСЂРјР°С‚РёСЂРѕРІР°РЅРЅС‹Рј РѕРїРёСЃР°РЅРёРµРј</returns>
+        /// <returns>Список товаров с индексами и форматированным описанием</returns>
         public List<(int Index, Product Product, string DisplayText)> GetProductsForDeletionMenu()
         {
             if (_repository != null)
             {
                 return _repository.ReadAll().Select((p, index) => 
-                    (index + 1, p, $"{index + 1}. {p.Name}, {p.StockQuantity} С€С‚")).ToList();
+                    (index + 1, p, $"{index + 1}. {p.Name}, {p.StockQuantity} шт")).ToList();
             }
             else
             {
                 return _products.Select((p, index) => 
-                    (index + 1, p, $"{index + 1}. {p.Name}, {p.StockQuantity} С€С‚")).ToList();
+                    (index + 1, p, $"{index + 1}. {p.Name}, {p.StockQuantity} шт")).ToList();
             }
         }
     }
