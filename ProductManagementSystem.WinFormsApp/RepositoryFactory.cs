@@ -21,8 +21,8 @@ namespace ProductManagementSystem.WinFormsApp
 
         // Переключалка тут!!!
         
-        private const RepositoryType CurrentType = RepositoryType.EntityFramework;
-        //private const RepositoryType CurrentType = RepositoryType.Dapper;
+        //private const RepositoryType CurrentType = RepositoryType.EntityFramework;
+        private const RepositoryType CurrentType = RepositoryType.Dapper;
 
         public static IRepository<Product> CreateRepository()
         {
