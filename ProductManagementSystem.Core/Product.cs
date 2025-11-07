@@ -3,6 +3,9 @@ using System;
 namespace ProductManagementSystem.Model
 {
     /// <summary>
+    /// SOLID - I: Реализует интерфейс IDomainObject для обеспечения полиморфизма доменных объектов.
+    /// SOLID - S: Класс отвечает только за хранение данных о товаре.
+    /// 
     /// Представляет товар в системе управления товарами.
     /// Содержит основную информацию о товаре: идентификатор, название, описание, цену, категорию и количество на складе.
     /// </summary>
@@ -68,7 +71,7 @@ namespace ProductManagementSystem.Model
         /// <returns>Строка с информацией о товаре</returns>
         public override string ToString()
         {
-            return $"ID: {Id}, Название: {Name}, Цена: {Price} RUB, Категория: {Category}, Количество: {StockQuantity}";
+            return $"ID: {Id}, Название: {Name}, Цена: {Price} руб., Категория: {Category}, Количество: {StockQuantity}";
         }
     }
 }

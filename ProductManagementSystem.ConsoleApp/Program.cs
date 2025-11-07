@@ -4,6 +4,8 @@ using ProductManagementSystem.Logic;
 namespace ProductManagementSystem.ConsoleApp
 {
     /// <summary>
+    /// SOLID - S: Класс отвечает только за UI консольного приложения.
+    /// 
     /// Консольное приложение для управления товарами.
     /// Предоставляет пользовательский интерфейс командной строки для выполнения CRUD операций
     /// и дополнительных бизнес-функций над товарами.
@@ -11,8 +13,7 @@ namespace ProductManagementSystem.ConsoleApp
     internal class Program
     {
         /// <summary>
-        /// Экземпляр класса с бизнес-логикой для работы с товарами.
-        /// Для переключения между Entity Framework и Dapper, измените константу в RepositoryFactory.cs
+        /// SOLID - D: Зависимость от ProductLogic через RepositoryFactory для переключения между EF и Dapper.
         /// </summary>
         private static ProductLogic _productLogic = new ProductLogic(RepositoryFactory.CreateRepository());
         
@@ -24,7 +25,7 @@ namespace ProductManagementSystem.ConsoleApp
         static void Main(string[] args)
         {
             bool exit = false;
-            Console.WriteLine("===== Система управления товарами (Console) =====");
+            Console.WriteLine(" Система управления товарами в консольке :)");
             
             // Основной цикл работы приложения
             while (!exit)
@@ -80,7 +81,7 @@ namespace ProductManagementSystem.ConsoleApp
         static void ShowAllProducts()
         {
             var products = _productLogic.GetAllProducts();
-            Console.WriteLine("===== Все товары =====");
+            Console.WriteLine("Все товары");
             
             if (products.Count == 0)
             {
@@ -115,7 +116,7 @@ namespace ProductManagementSystem.ConsoleApp
                 return; 
             }
             
-            Console.WriteLine("===== Детали товара =====");
+            Console.WriteLine("Детали товара");
             Console.WriteLine(p);
         }
 
@@ -125,7 +126,7 @@ namespace ProductManagementSystem.ConsoleApp
         /// </summary>
         static void AddProduct()
         {
-            Console.WriteLine("===== Добавление нового товара =====");
+            Console.WriteLine("Добавление нового товара");
             var prod = new ProductManagementSystem.Model.Product();
             
             // Ввод названия товара
@@ -232,7 +233,7 @@ namespace ProductManagementSystem.ConsoleApp
                 return; 
             }
             
-            Console.WriteLine("===== Обновление товара =====");
+            Console.WriteLine(" Обновление товара");
             Console.WriteLine("Оставьте поле пустым, чтобы сохранить текущее значение.");
             
             // Обновление названия
@@ -339,7 +340,7 @@ namespace ProductManagementSystem.ConsoleApp
             }
             
             var list = _productLogic.FilterByCategory(cat);
-            Console.WriteLine($"===== Товары категории '{cat}' =====");
+            Console.WriteLine($" Товары категории '{cat}'");
             
             if (list.Count == 0)
             {
@@ -372,7 +373,7 @@ namespace ProductManagementSystem.ConsoleApp
                 return;
             }
             
-            Console.WriteLine("===== Список товаров =====");
+            Console.WriteLine("Список товаров");
             foreach (var (index, product) in productsWithIndexes)
             {
                 Console.WriteLine($"{index}. {product.Name}, {product.StockQuantity} шт");

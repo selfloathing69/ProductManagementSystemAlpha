@@ -15,7 +15,7 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
         /// </summary>
         public static void EntityFrameworkExample()
         {
-            Console.WriteLine("=== Пример использования Entity Framework ===");
+            Console.WriteLine(" Пример использования Entity Framework ");
             
             try
             {
@@ -60,7 +60,7 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
         /// </summary>
         public static void DapperExample()
         {
-            Console.WriteLine("\n=== Пример использования Dapper ===");
+            Console.WriteLine("\n Пример использования Dapper ");
             
             try
             {
@@ -105,7 +105,7 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
         /// </summary>
         public static void CustomConnectionStringExample()
         {
-            Console.WriteLine("\n=== Пример с пользовательской строкой подключения ===");
+            Console.WriteLine("\n Пример с пользовательской строкой подключения ");
             
             var customConnectionString = "Server=AspireNotebook\\SQLEXPRESS;Database=ProductManagementDB;Integrated Security=True;TrustServerCertificate=True;";
             
@@ -131,7 +131,7 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
         /// </summary>
         public static void CrudOperationsExample()
         {
-            Console.WriteLine("\n=== Пример CRUD операций ===");
+            Console.WriteLine("\n Пример CRUD операций ");
             
             try
             {

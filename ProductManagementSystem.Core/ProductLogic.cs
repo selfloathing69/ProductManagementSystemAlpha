@@ -72,11 +72,14 @@ namespace ProductManagementSystem.Logic
     }
 
     /// <summary>
+    /// SOLID - S: Класс отвечает только за бизнес-логику управления товарами.
+    /// SOLID - D: Зависит от абстракции IRepository, а не от конкретной реализации.
+    /// SOLID - O: Можно расширять новыми методами без изменения существующих.
+    /// 
     /// Содержит бизнес-логику для управления товарами.
     /// Предоставляет функциональность для создания, чтения, обновления и удаления товаров (CRUD операции),
     /// а также дополнительные бизнес-функции для фильтрации и расчёта общей стоимости склада.
-    /// 
-    /// Тут мы применили принцип Dependency Inversion Principle (DIP) из SOLID:
+    ///     /// Тут мы применили принцип Dependency Inversion Principle (DIP) из SOLID:
     /// - Класс зависит от абстракции (IRepository<Product>), а не от конкретной реализации
     /// - Зависимость внедряется через конструктор (Constructor Injection)
     /// - Это позволяет легко переключаться между различными реализациями репозитория (EF, Dapper)
@@ -87,6 +90,7 @@ namespace ProductManagementSystem.Logic
         /// Репозиторий для работы с товарами в базе данных.
         /// Тут мы сделали поле зависимостью от интерфейса, а не от конкретной реализации.
         /// Это ключевой момент DIP - "зависим от абстракций, а не от конкретики".
+        /// SOLID - D: Зависимость от интерфейса IRepository, а не от конкретной реализации (EF или Dapper).
         /// </summary>
         private readonly IRepository<Product>? _repository;
         
@@ -109,9 +113,11 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// Инициализирует новый экземпляр класса ProductLogic с указанным репозиторием.
+        /// SOLID - D: Constructor Injection - внедрение зависимости через конструктор.
+        /// SOLID - L: Поддерживает любую реализацию IRepository без нарушения поведения.
         /// 
-        /// Тут мы реализовали Constructor Injection - один из способов внедрения зависимостей:
+        /// Инициализирует новый экземпляр класса ProductLogic с указанным репозиторием.
+        ///         /// Тут мы реализовали Constructor Injection - один из способов внедрения зависимостей:
         /// - Конструктор принимает зависимость (IRepository) в качестве параметра
         /// - Зависимость сохраняется в readonly поле, гарантируя неизменность после создания объекта
         /// - Это делает зависимости явными и обязательными
@@ -120,7 +126,7 @@ namespace ProductManagementSystem.Logic
         /// <param name="repository">Репозиторий для работы с товарами (null для использования локального списка)</param>
         public ProductLogic(IRepository<Product>? repository)
         {
-            // Тут мы сохраняем внедрённую зависимость в поле класса
+            // SOLID - D: Сохранение внедрённой зависимости
             _repository = repository;
             
             // Инициализация данных
@@ -139,7 +145,6 @@ namespace ProductManagementSystem.Logic
         /// </summary>
         private void InitializeLocalData()
         {
-            // Добавление примеров товаров для демонстрации функциональности системы
             AddProduct(new Product { Id = 0, Name = "Ноутбук", Description = "Мощный игровой ноутбук", Price = 75000, Category = "Электроника", StockQuantity = 10 });
             AddProduct(new Product { Id = 0, Name = "Смартфон iPhone 15 Pro", Description = "Флагманский смартфон Apple", Price = 85000, Category = "Электроника", StockQuantity = 15 });
             AddProduct(new Product { Id = 0, Name = "Беспроводная мышь Logitech", Description = "Эргономичная беспроводная мышь", Price = 2500, Category = "Периферия", StockQuantity = 50 });

@@ -12,10 +12,10 @@
 ```csharp
 public override void Load()
 {
-    // === Entity Framework ===
+    //  Entity Framework 
     Bind<IRepository<Product>>().To<EntityRepository<Product>>().InSingletonScope();
     
-    // === Dapper ===
+    //  Dapper 
     // Закомментируйте строку выше и раскомментируйте эту:
     // Bind<IRepository<Product>>().To<DapperRepository<Product>>().InSingletonScope();
 }
@@ -52,7 +52,7 @@ public override void Load()
 
 **Старый код (больше не используется):**
 ```csharp
-// === ПЕРЕКЛЮЧЕНИЕ РЕПОЗИТОРИЯ ===
+//  ПЕРЕКЛЮЧЕНИЕ РЕПОЗИТОРИЯ 
 // Раскомментируйте нужную строку:
 
 private const RepositoryType CurrentType = RepositoryType.EntityFramework;
