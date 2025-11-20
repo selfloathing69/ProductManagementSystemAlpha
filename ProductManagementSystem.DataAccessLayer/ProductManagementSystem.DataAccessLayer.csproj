@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\ProductManagementSystem.Core\ProductManagementSystem.Core.csproj" />
+    <ProjectReference Include="..\ProductManagementSystem.Model\ProductManagementSystem.Model.csproj" />
+    <ProjectReference Include="..\ProductManagementSystem.Logic\ProductManagementSystem.Logic.csproj" />
   </ItemGroup>
 
   <ItemGroup>

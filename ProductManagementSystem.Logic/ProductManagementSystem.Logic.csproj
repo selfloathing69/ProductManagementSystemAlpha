@@ -10,4 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Ninject" Version="3.3.6" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ProductManagementSystem.Model\ProductManagementSystem.Model.csproj" />
+  </ItemGroup>
 </Project>
