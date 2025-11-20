@@ -25,6 +25,9 @@ namespace ProductManagementSystem.DataAccessLayer.EF
             {
                 using (var context = new AppDbContext())
                 {
+                    // При работе с таблицей, где Id — IDENTITY, сбрасываем явный Id,
+                    // чтобы база данных сгенерировала значение автоматически
+                    entity.Id = 0;
                     context.Set<T>().Add(entity);
                     context.SaveChanges();
                 }

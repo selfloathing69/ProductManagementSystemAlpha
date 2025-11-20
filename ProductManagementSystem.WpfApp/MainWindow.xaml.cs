@@ -1,10 +1,9 @@
 using System.Windows;
 using System.Linq;
 using ProductManagementSystem.Logic;
-using ProductManagementSystem.Model;
 using System.Collections.Generic;
 using System.Windows.Controls;
-using System; // <--- добавьте эту строку
+using System;
 
 namespace ProductManagementSystem.WpfApp
 {
@@ -17,8 +16,9 @@ namespace ProductManagementSystem.WpfApp
     {
         /// <summary>
         /// Экземпляр класса с бизнес-логикой для работы с товарами.
+        /// Для переключения между Entity Framework и Dapper, измените константу в RepositoryFactory.cs
         /// </summary>
-        private ProductLogic _logic = new ProductLogic();
+        private ProductLogic _logic = new ProductLogic(RepositoryFactory.CreateRepository());
 
         /// <summary>
         /// Инициализирует новый экземпляр главного окна.
@@ -133,7 +133,7 @@ namespace ProductManagementSystem.WpfApp
             if (!TryGetDecimalFromComboBox(ComboBoxPrice, out var price))
                 return;
 
-            // Валидация количества
+            // Валидация количества 
             if (!TryGetIntFromComboBox(ComboBoxQuantity, out var quantity))
                 return;
 
@@ -182,7 +182,7 @@ namespace ProductManagementSystem.WpfApp
             }
 
             // Создание нового товара
-            var product = new Product
+            var product = new ProductManagementSystem.Model.Product
             {
                 Id = id,
                 Name = name,
@@ -272,7 +272,7 @@ namespace ProductManagementSystem.WpfApp
                 return;
 
             // Создание обновлённого товара
-            var product = new Product
+            var product = new ProductManagementSystem.Model.Product
             {
                 Id = id,
                 Name = TextBoxEditName.Text.Trim(),
@@ -299,7 +299,7 @@ namespace ProductManagementSystem.WpfApp
         /// </summary>
         private void ButtonDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (DataGridProducts.SelectedItem is Product product)
+            if (DataGridProducts.SelectedItem is ProductManagementSystem.Model.Product product)
             {
                 // Запрашиваем подтверждение удаления
                 var result = MessageBox.Show(

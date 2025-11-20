@@ -65,6 +65,7 @@ namespace ProductManagementSystem.DataAccessLayer.EF
                 entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
                 entity.Property(e => e.Category).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.StockQuantity).IsRequired();
+
             });
         }
     }
