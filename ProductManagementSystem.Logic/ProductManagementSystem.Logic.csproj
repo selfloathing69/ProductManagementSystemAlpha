@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="RepositoryProvider.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Ninject" Version="3.3.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ProductManagementSystem.Model\ProductManagementSystem.Model.csproj" />
+  </ItemGroup>
+</Project>

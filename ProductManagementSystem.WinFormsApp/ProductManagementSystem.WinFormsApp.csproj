@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ProductManagementSystem.Logic\ProductManagementSystem.Logic.csproj" />
+    <ProjectReference Include="..\ProductManagementSystem.DataAccessLayer\ProductManagementSystem.DataAccessLayer.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Ninject" Version="3.3.6" />
+  </ItemGroup>
+</Project>
