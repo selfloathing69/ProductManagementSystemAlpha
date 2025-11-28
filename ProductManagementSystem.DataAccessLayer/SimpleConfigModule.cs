@@ -6,6 +6,7 @@ using ProductManagementSystem.Logic.Mappers;
 using ProductManagementSystem.Model;
 using ProductManagementSystem.DataAccessLayer.EF;
 using ProductManagementSystem.DataAccessLayer.Dapper;
+using ProductManagementSystem.Shared;
 
 namespace ProductManagementSystem.DataAccessLayer
 {
@@ -13,6 +14,8 @@ namespace ProductManagementSystem.DataAccessLayer
     /// Модуль конфигурации Ninject для настройки Dependency Injection.
     /// SOLID - D: Модуль использует DI-контейнер для управления зависимостями между компонентами.
     /// SOLID - O: Позволяет изменять конфигурацию без изменения клиентского кода через замену конфигурации.
+    /// 
+    /// MVP Pattern: This module also registers MVP components (IProductModel).
     /// 
     /// Это же самый простой конфигуратор для DI-контейнера Ninject
     /// Наша задача говорить, какие классы используем
@@ -53,6 +56,12 @@ namespace ProductManagementSystem.DataAccessLayer
             // SOLID - D: Привязка ILogic к ProductLogic
             // ProductLogic использует IRepository + IBusinessFunctions
             Bind<ILogic>().To<ProductLogic>().InSingletonScope();
+
+            // MVP Pattern - Model Layer
+            
+            // Привязка IProductModel к ProductModelMvp
+            // ProductModelMvp обёртывает ProductLogic и добавляет события для MVP
+            Bind<IProductModel>().To<ProductModelMvp>().InSingletonScope();
 
             // Сервисы для юай
             
