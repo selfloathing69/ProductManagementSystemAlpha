@@ -26,11 +26,9 @@ namespace ProductManagementSystem.WinFormsApp
             ApplicationConfiguration.Initialize();
             
             // Create Ninject DI kernel with configuration module
+            // SimpleConfigModule already registers IProductModel -> ProductModelMvp
             using (var kernel = new StandardKernel(new SimpleConfigModule()))
             {
-                // Register MVP bindings
-                RegisterMvpBindings(kernel);
-                
                 try
                 {
                     // Create the View (MainForm)
@@ -57,17 +55,6 @@ namespace ProductManagementSystem.WinFormsApp
                         MessageBoxIcon.Error);
                 }
             }
-        }
-
-        /// <summary>
-        /// Registers MVP-specific bindings in the DI container.
-        /// </summary>
-        /// <param name="kernel">Ninject kernel</param>
-        private static void RegisterMvpBindings(IKernel kernel)
-        {
-            // Register IProductModel -> ProductModelMvp
-            // ProductModelMvp wraps ProductLogic for MVP pattern
-            kernel.Bind<IProductModel>().To<ProductModelMvp>().InSingletonScope();
         }
     }
 }

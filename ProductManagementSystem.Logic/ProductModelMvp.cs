@@ -260,9 +260,8 @@ namespace ProductManagementSystem.Logic
         {
             try
             {
-#pragma warning disable CS0618 // Suppress obsolete warning for IdExists
-                return _logic.IdExists(id);
-#pragma warning restore CS0618
+                // Use GetProductById instead of deprecated IdExists
+                return _logic.GetById(id) != null;
             }
             catch (Exception ex)
             {
@@ -276,9 +275,8 @@ namespace ProductManagementSystem.Logic
         {
             try
             {
-#pragma warning disable CS0618 // Suppress obsolete warning for GetProductsWithIndexes
-                return _logic.GetProductsWithIndexes();
-#pragma warning restore CS0618
+                // Use GetAll() with Select to create indexed tuples instead of obsolete method
+                return _logic.GetAll().Select((p, index) => (index + 1, p)).ToList();
             }
             catch (Exception ex)
             {
