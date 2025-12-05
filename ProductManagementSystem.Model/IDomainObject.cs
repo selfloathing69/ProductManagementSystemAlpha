@@ -7,7 +7,7 @@ namespace ProductManagementSystem.Model
     public interface IDomainObject
     {
         /// <summary>
-        /// Уникальный идентификатор объекта в базе данных.
+        /// Уникальный идентификатор объекта в Базе Данных.
         /// </summary>
         int Id { get; set; }
     }

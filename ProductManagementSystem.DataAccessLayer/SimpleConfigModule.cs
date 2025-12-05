@@ -1,3 +1,4 @@
+using System;
 using Ninject.Modules;
 using ProductManagementSystem.Logic;
 using ProductManagementSystem.Logic.Services;
@@ -6,22 +7,22 @@ using ProductManagementSystem.Logic.Mappers;
 using ProductManagementSystem.Model;
 using ProductManagementSystem.DataAccessLayer.EF;
 using ProductManagementSystem.DataAccessLayer.Dapper;
-using ProductManagementSystem.Shared;
 
 namespace ProductManagementSystem.DataAccessLayer
 {
     /// <summary>
+    /// УСТАРЕВШИЙ: Используйте CompositionRoot в ProductManagementSystem.ConsoleApp
+    /// 
     /// Модуль конфигурации Ninject для настройки Dependency Injection.
     /// SOLID - D: Модуль использует DI-контейнер для управления зависимостями между компонентами.
     /// SOLID - O: Позволяет изменять конфигурацию без изменения клиентского кода через замену конфигурации.
     /// 
     /// MVP Pattern: This module also registers MVP components (IProductModel).
     /// 
-    /// Это же самый простой конфигуратор для DI-контейнера Ninject
-    /// Наша задача говорить, какие классы используем
-    /// для каждого интерфейса (зависимости)
+    /// ВНИМАНИЕ: Этот класс устарел. Точка сборки теперь находится в Presenter (ConsoleApp).
     /// </summary>
-    public class SimpleConfigModule : NinjectModule /// ============================================================
+    [Obsolete("Используйте CompositionRoot в ProductManagementSystem.ConsoleApp. Точка сборки должна быть в Presenter согласно требованиям MVP.")]
+    public class SimpleConfigModule : NinjectModule
     {
         /// <summary>
         /// Метод Load() вызывается Ninject при загрузке модуля.
@@ -72,6 +73,7 @@ namespace ProductManagementSystem.DataAccessLayer
         }
     }
 }
+
 
 
 

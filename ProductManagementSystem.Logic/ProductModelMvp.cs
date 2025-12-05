@@ -2,46 +2,34 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ProductManagementSystem.Model;
-using ProductManagementSystem.Shared;
 
 namespace ProductManagementSystem.Logic
 {
     /// <summary>
-    /// MVP Pattern - Model Implementation.
-    /// Implements IProductModel interface and wraps existing ProductLogic.
-    /// Raises events when data changes to notify the Presenter.
+    /// Шаблон MVP — Реализация модели.
+    /// Реализует интерфейс IProductModel и оборачивает существующий ProductLogic.
+    /// Вызывает события при изменении данных для уведомления презентера.
     /// </summary>
     public class ProductModelMvp : IProductModel
     {
         private readonly ProductLogic _logic;
-
-        #region Events
-
-        /// <inheritdoc/>
         public event EventHandler? ProductsChanged;
-
-        /// <inheritdoc/>
         public event EventHandler<string>? ErrorOccurred;
 
-        #endregion
 
-        #region Constructor
+     ///===================== Construct================================or
 
         /// <summary>
-        /// Initializes a new instance of ProductModelMvp with the specified ProductLogic.
+        /// Инициализирует новый экземпляр ProductModelMvp с указанным ProductLogic.
         /// </summary>
-        /// <param name="logic">The ProductLogic instance to wrap</param>
         public ProductModelMvp(ProductLogic logic)
         {
             _logic = logic ?? throw new ArgumentNullException(nameof(logic));
         }
 
-        #endregion
-
-        #region Event Raising Methods
 
         /// <summary>
-        /// Raises the ProductsChanged event.
+        /// Вызывает событие ProductsChanged.
         /// </summary>
         protected virtual void OnProductsChanged()
         {
@@ -49,15 +37,12 @@ namespace ProductManagementSystem.Logic
         }
 
         /// <summary>
-        /// Raises the ErrorOccurred event.
+        /// Вызывает событие ErrorOccurred.
         /// </summary>
-        /// <param name="errorMessage">Error message to include</param>
         protected virtual void OnErrorOccurred(string errorMessage)
         {
             ErrorOccurred?.Invoke(this, errorMessage);
         }
-
-        #endregion
 
         #region CRUD Operations
 

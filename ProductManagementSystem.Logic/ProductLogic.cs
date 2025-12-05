@@ -97,9 +97,12 @@ namespace ProductManagementSystem.Logic
 
 
         /// Л О Г И К А =============================================================================== Л О Г И К А
-        /// Л О Г И К А =============================================================================== Л О Г И К А
+       
+       /// Л О Г И К А =============================================================================== Л О Г И К А
+       
         private readonly IRepository<Product>? _repository;
 
+// ==============================================================
         /// <summary>
         /// SOLID - D: Зависимость от абстракции IBusinessFunctions для бизнес-логики.
         /// Бизнес-функции отвечают за фильтрацию, расчёты, группировку.
@@ -203,7 +206,7 @@ namespace ProductManagementSystem.Logic
             }
         }
 
-        // ===== CRUD операции - делегируются в IRepository =====
+        // CRUD операции - делегируются в IRepository
 
         /// <summary>
         /// Добавляет новый товар.
@@ -370,7 +373,7 @@ namespace ProductManagementSystem.Logic
             return _businessFunctions.Search(allProducts, query);
         }
 
-        // ===== Дополнительные методы =====
+        // Дополнительные методи
 
         /// <summary>
         /// Увеличивает количество товара.
@@ -535,8 +538,10 @@ namespace ProductManagementSystem.Logic
             }
         }
 
-        // ===== Устаревшие методы для обратной совместимости =====
+        // Устаревшие методы для обратной совместимости
         // Эти методы делегируют вызовы к новым методам
+
+        #region obsolete methods for backward compatability
 
         [Obsolete("Используйте Add() вместо AddProduct()")]
         public Product AddProduct(Product product) => Add(product);
@@ -574,3 +579,4 @@ namespace ProductManagementSystem.Logic
         }
     }
 }
+#endregion

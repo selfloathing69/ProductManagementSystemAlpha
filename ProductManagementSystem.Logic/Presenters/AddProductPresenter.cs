@@ -5,11 +5,12 @@ using ProductManagementSystem.Shared;
 namespace ProductManagementSystem.Logic.Presenters
 {
     /// <summary>
-    /// MVP Pattern - Add Product Dialog Presenter.
-    /// Connects the AddProduct View (IAddProductView) and Model (IProductModel).
-    /// Handles validation and product addition logic.
+    /// Шаблон MVP — добавление презентатора диалогового окна продукта. 
+    /// Соединяет представление AddProduct (IADProductView) и модель (IProductModel). 
+    /// Обрабатывает логику проверки и добавления продуктов. 
+    /// Вид не имеет зависимости от модели - работает только с примитивными типами. 
     /// 
-    /// SOLID - D: Depends on abstractions (IAddProductView, IProductModel), not concrete implementations.
+    /// SOLID - D: Зависит от абстракций (IAAddProductView, IProductModel), а не от конкретных реализаций.
     /// </summary>
     public class AddProductPresenter : IDisposable
     {
@@ -18,23 +19,42 @@ namespace ProductManagementSystem.Logic.Presenters
         private bool _disposed;
 
         /// <summary>
-        /// Gets the created product after successful save.
+        /// Получает созданный DTO продукта после успешного сохранения.
         /// </summary>
-        public Product? CreatedProduct { get; private set; }
+        public ProductDto? CreatedProduct { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of AddProductPresenter with the specified View and Model.
+        /// Инициализирует новый экземпляр AddProductPresenter с указанными View и Model.
         /// </summary>
-        /// <param name="view">The View interface for UI interactions</param>
-        /// <param name="model">The Model interface for business logic</param>
+
         public AddProductPresenter(IAddProductView view, IProductModel model)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _model = model ?? throw new ArgumentNullException(nameof(model));
 
-            // Subscribe to View events
+            // =================================================================================
             SubscribeToViewEvents();
         }
+
+        #region Product <-> ProductDto Mapping
+
+        /// <summary>
+        /// Преобразует объект домена Product в ProductDto для View.
+        /// </summary>
+        private static ProductDto ToDto(Product product)
+        {
+            return new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                Category = product.Category,
+                StockQuantity = product.StockQuantity
+            };
+        }
+
+        #endregion
 
         #region View Event Subscriptions
 
@@ -58,7 +78,7 @@ namespace ProductManagementSystem.Logic.Presenters
         {
             try
             {
-                // Validate form data
+                // Валидируем вводимые данные
                 if (string.IsNullOrWhiteSpace(_view.ProductName))
                 {
                     _view.ShowError("Ошибка", "Поле 'Название' обязательно для заполнения!");
@@ -75,7 +95,7 @@ namespace ProductManagementSystem.Logic.Presenters
 
                 int id = _view.ProductId;
 
-                // Check if ID already exists
+                // проверяем если ID уже существует
                 if (_model.ProductExists(id))
                 {
                     if (_view.ShowConfirmation("ID уже существует",
@@ -86,7 +106,7 @@ namespace ProductManagementSystem.Logic.Presenters
                     }
                     else
                     {
-                        // Check for duplicate product by name and category
+                        // проверяем если продукт с таким именем и категорией уже существует
                         string name = _view.ProductName.Trim();
                         string category = _view.ProductCategory.Trim();
 
@@ -101,7 +121,8 @@ namespace ProductManagementSystem.Logic.Presenters
                             {
                                 if (_model.AddQuantityToProduct(existingProduct.Id, _view.StockQuantity))
                                 {
-                                    CreatedProduct = _model.GetProductById(existingProduct.Id);
+                                    var updatedProduct = _model.GetProductById(existingProduct.Id);
+                                    CreatedProduct = updatedProduct != null ? ToDto(updatedProduct) : null;
                                     _view.ShowMessage("Успех",
                                         $"Количество товара обновлено. Новое количество: {CreatedProduct?.StockQuantity ?? 0}");
                                     _view.CloseWithSuccess();
@@ -115,7 +136,7 @@ namespace ProductManagementSystem.Logic.Presenters
                     }
                 }
 
-                // Create and add the new product
+                // создаем новый продукт
                 var product = new Product
                 {
                     Id = id,
@@ -126,7 +147,8 @@ namespace ProductManagementSystem.Logic.Presenters
                     StockQuantity = _view.StockQuantity
                 };
 
-                CreatedProduct = _model.AddProduct(product);
+                var addedProduct = _model.AddProduct(product);
+                CreatedProduct = ToDto(addedProduct);
                 _view.ShowMessage("Успех", "Товар успешно добавлен.");
                 _view.CloseWithSuccess();
             }
@@ -146,7 +168,7 @@ namespace ProductManagementSystem.Logic.Presenters
         #region IDisposable
 
         /// <summary>
-        /// Disposes the presenter and unsubscribes from events.
+        /// Удаляет презентатор и отменяет подписку на события.
         /// </summary>
         public void Dispose()
         {
@@ -155,9 +177,8 @@ namespace ProductManagementSystem.Logic.Presenters
         }
 
         /// <summary>
-        /// Disposes managed resources.
-        /// </summary>
-        /// <param name="disposing">True if disposing managed resources</param>
+        /// Удаляет управляемые ресурсы.
+        /// </summary
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)

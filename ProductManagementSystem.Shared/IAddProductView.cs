@@ -1,101 +1,99 @@
-using ProductManagementSystem.Model;
-
 namespace ProductManagementSystem.Shared
 {
     /// <summary>
-    /// MVP Pattern - Interface for Add Product dialog view.
-    /// Defines methods and events for adding a new product.
+    /// Шаблон MVP — интерфейс для диалогового окна «Добавить продукт».
+    /// Определяет методы и события для добавления нового продукта.
+    /// View работает с примитивными типами данных, не имеет зависимости от Model.
     /// </summary>
     public interface IAddProductView
     {
-        #region Events - User Actions
-
         /// <summary>
-        /// Fired when user confirms adding a product.
+        /// Срабатывает, когда пользователь подтверждает добавление продукта.
         /// </summary>
         event EventHandler? SaveRequested;
 
         /// <summary>
-        /// Fired when user cancels the operation.
+        /// Срабатывает, когда пользователь отменяет операцию.
         /// </summary>
         event EventHandler? CancelRequested;
 
-        #endregion
-
-        #region Properties - Form Data
-
         /// <summary>
-        /// Gets the product ID entered by the user.
+        /// Получает идентификатор продукта, введенный пользователем.
         /// </summary>
         int ProductId { get; }
 
         /// <summary>
-        /// Gets the product name entered by the user.
+        /// Получает название продукта, введенное пользователем.
         /// </summary>
         string ProductName { get; }
 
         /// <summary>
-        /// Gets the product description entered by the user.
+        /// Получает описание продукта, введенное пользователем.
         /// </summary>
         string ProductDescription { get; }
 
         /// <summary>
-        /// Gets the product price entered by the user.
+        /// Получает цену товара, введенную пользователем.
         /// </summary>
         decimal ProductPrice { get; }
 
         /// <summary>
-        /// Gets the product category selected by the user.
+        /// Получает категорию продукта, выбранную пользователем.
         /// </summary>
         string ProductCategory { get; }
 
         /// <summary>
-        /// Gets the stock quantity entered by the user.
+        /// Возвращает количество товара на складе, введенное пользователем.
         /// </summary>
         int StockQuantity { get; }
 
-        #endregion
 
-        #region Methods - UI Updates
+
 
         /// <summary>
-        /// Shows an error message to the user.
+        /// Показывает пользователю сообщение об ошибке.
         /// </summary>
-        /// <param name="title">Error title</param>
-        /// <param name="message">Error message</param>
+        /// <param name="title">Заголовок ошибки</param>
+        /// <param name="message">Сообщение об ошибке</param>
         void ShowError(string title, string message);
 
         /// <summary>
-        /// Shows an information message to the user.
+        /// Показывает информационное сообщение пользователю.
         /// </summary>
-        /// <param name="title">Message title</param>
-        /// <param name="message">Message content</param>
+        /// <param name="title">Заголовок сообщения</param>
+        /// <param name="message">Содержание сообщения</param>
         void ShowMessage(string title, string message);
 
         /// <summary>
-        /// Shows a confirmation dialog to the user.
+        /// Показывает пользователю диалоговое окно подтверждения.
         /// </summary>
-        /// <param name="title">Dialog title</param>
-        /// <param name="message">Confirmation message</param>
-        /// <returns>True if user confirms, false otherwise</returns>
+        /// <param name="title">Заголовок диалогового окна</param>
+        /// <param name="message">Сообщение подтверждения</param>
+        /// <returns>True, если пользователь подтверждает, false в противном случае</returns>
+      
+        
         bool ShowConfirmation(string title, string message);
 
         /// <summary>
-        /// Closes the dialog with success result.
+        /// Закрывает диалоговое окно с успешным результатом.
         /// </summary>
+     
+        
         void CloseWithSuccess();
 
         /// <summary>
-        /// Closes the dialog with cancel result.
+        /// Закрывает диалоговое окно с результатом отмены.
         /// </summary>
+     
+                
+        
         void CloseWithCancel();
 
         /// <summary>
-        /// Sets focus to a specific field.
+        /// Устанавливает фокус на определенное поле.
         /// </summary>
         /// <param name="fieldName">Name of the field to focus</param>
         void FocusField(string fieldName);
 
-        #endregion
     }
 }

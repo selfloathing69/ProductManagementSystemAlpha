@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using ProductManagementSystem.Logic;
-using ProductManagementSystem.Logic.Presenters;
-using ProductManagementSystem.Model;
 using ProductManagementSystem.Shared;
 
 namespace ProductManagementSystem.WinFormsApp
@@ -15,13 +12,11 @@ namespace ProductManagementSystem.WinFormsApp
     /// Implements IProductView interface for the MVP pattern.
     /// SOLID - S: Class is responsible only for UI of the main window.
     /// SOLID - D: Depends on IProductView abstraction, communicates with Presenter through events.
+    /// View не имеет зависимости от Model - работает только с ProductDto.
     /// </summary>
     public partial class MainForm : Form, IProductView
     {
         #region Fields
-
-        private ProductPresenter? _presenter;
-        private IProductModel? _model;
 
         // Main UI elements
         private DataGridView dataGridView = null!;
@@ -60,24 +55,12 @@ namespace ProductManagementSystem.WinFormsApp
             InitializeComponent();
         }
 
-        /// <summary>
-        /// Sets the presenter and model for this view.
-        /// This method should be called after construction to complete MVP wiring.
-        /// </summary>
-        /// <param name="presenter">The presenter to handle view events</param>
-        /// <param name="model">The model for business operations</param>
-        public void SetPresenter(ProductPresenter presenter, IProductModel model)
-        {
-            _presenter = presenter ?? throw new ArgumentNullException(nameof(presenter));
-            _model = model ?? throw new ArgumentNullException(nameof(model));
-        }
-
         #endregion
 
         #region IProductView Implementation
 
         /// <inheritdoc/>
-        public void ShowProducts(IEnumerable<Product> products)
+        public void ShowProducts(IEnumerable<ProductDto> products)
         {
             try
             {
@@ -143,6 +126,117 @@ namespace ProductManagementSystem.WinFormsApp
                 return null;
 
             return (int)dataGridView.CurrentRow.Cells["Id"].Value;
+        }
+
+        /// <inheritdoc/>
+        public (int ProductId, int Quantity)? ShowDeleteByQuantityDialog(IEnumerable<(int Index, ProductDto Product)> products)
+        {
+            var productList = products.ToList();
+            
+            if (productList.Count == 0)
+            {
+                ShowMessage("Информация", "Товары не найдены.");
+                return null;
+            }
+
+            using (var selectForm = new Form
+            {
+                Text = "Выберите товар для удаления",
+                Size = new Size(500, 400),
+                StartPosition = FormStartPosition.CenterParent,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false
+            })
+            {
+                // Product list
+                var listBox = new ListBox
+                {
+                    Dock = DockStyle.Top,
+                    Height = 200
+                };
+
+                foreach (var (index, product) in productList)
+                {
+                    listBox.Items.Add($"{index}. {product.Name}, {product.StockQuantity} шт");
+                }
+
+                // Quantity input field
+                var lblQuantity = new Label
+                {
+                    Text = "Количество для удаления (0 - всё):",
+                    Location = new Point(10, 220),
+                    Size = new Size(250, 20)
+                };
+
+                var numQuantity = new NumericUpDown
+                {
+                    Location = new Point(10, 245),
+                    Size = new Size(120, 25),
+                    Minimum = 0,
+                    Maximum = 999999
+                };
+
+                var btnOk = new Button
+                {
+                    Text = "ОК",
+                    Location = new Point(10, 280),
+                    Size = new Size(80, 30)
+                };
+
+                var btnCancel = new Button
+                {
+                    Text = "Отмена",
+                    Location = new Point(100, 280),
+                    Size = new Size(80, 30)
+                };
+
+                (int ProductId, int Quantity)? result = null;
+
+                // Product selection handler
+                listBox.SelectedIndexChanged += (s, args) =>
+                {
+                    if (listBox.SelectedIndex >= 0)
+                    {
+                        var selectedProduct = productList[listBox.SelectedIndex].Product;
+                        numQuantity.Maximum = selectedProduct.StockQuantity;
+                        numQuantity.Value = 0;
+                    }
+                };
+
+                // OK button handler
+                btnOk.Click += (s, args) =>
+                {
+                    if (listBox.SelectedIndex < 0)
+                    {
+                        ShowError("Предупреждение", "Выберите товар для удаления.");
+                        return;
+                    }
+
+                    var selectedProduct = productList[listBox.SelectedIndex].Product;
+                    result = (selectedProduct.Id, (int)numQuantity.Value);
+                    selectForm.DialogResult = DialogResult.OK;
+                };
+
+                // Cancel button handler
+                btnCancel.Click += (s, args) =>
+                {
+                    selectForm.DialogResult = DialogResult.Cancel;
+                };
+
+                selectForm.Controls.Add(listBox);
+                selectForm.Controls.Add(lblQuantity);
+                selectForm.Controls.Add(numQuantity);
+                selectForm.Controls.Add(btnOk);
+                selectForm.Controls.Add(btnCancel);
+
+                if (selectForm.ShowDialog(this) == DialogResult.OK)
+                {
+                    return result;
+                }
+
+                return null;
+            }
         }
 
         #endregion
@@ -256,27 +350,12 @@ namespace ProductManagementSystem.WinFormsApp
         }
 
         /// <summary>
-        /// Handles Add button click - shows AddProductForm dialog.
-        /// MVP: View fires AddProductRequested event and handles the dialog.
+        /// Handles Add button click - fires AddProductRequested event.
+        /// MVP: Presenter handles showing the dialog.
         /// </summary>
         private void BtnAdd_Click(object? sender, EventArgs e)
         {
             AddProductRequested?.Invoke(this, EventArgs.Empty);
-
-            if (_model == null)
-            {
-                ShowError("Ошибка", "Модель не инициализирована.");
-                return;
-            }
-
-            // Show the add product dialog (View is responsible for showing the dialog)
-            using (var addForm = new AddProductForm(_model))
-            {
-                if (addForm.ShowDialog(this) == DialogResult.OK)
-                {
-                    // Refresh is handled by Model's ProductsChanged event
-                }
-            }
         }
 
         /// <summary>
@@ -295,144 +374,14 @@ namespace ProductManagementSystem.WinFormsApp
         }
 
         /// <summary>
-        /// Handles Delete By Quantity button click.
-        /// MVP: View handles showing the selection dialog and fires DeleteProductByQuantityRequested event.
+        /// Handles Delete By Quantity button click - fires DeleteProductByQuantityRequested event.
+        /// MVP: View просит Presenter предоставить данные для диалога.
         /// </summary>
         private void BtnDeleteByQuantity_Click(object? sender, EventArgs e)
         {
-            if (_presenter == null)
-            {
-                ShowError("Ошибка", "Презентер не инициализирован.");
-                return;
-            }
-
-            try
-            {
-                var productsWithIndexes = _presenter.GetProductsWithIndexes();
-                
-                if (productsWithIndexes.Count == 0)
-                {
-                    ShowMessage("Информация", "Товары не найдены.");
-                    return;
-                }
-
-                // Create product selection form
-                using (var selectForm = new Form
-                {
-                    Text = "Выберите товар для удаления",
-                    Size = new Size(500, 400),
-                    StartPosition = FormStartPosition.CenterParent,
-                    FormBorderStyle = FormBorderStyle.FixedDialog,
-                    MaximizeBox = false,
-                    MinimizeBox = false
-                })
-                {
-                    // Product list
-                    var listBox = new ListBox
-                    {
-                        Dock = DockStyle.Top,
-                        Height = 200
-                    };
-
-                    foreach (var (index, product) in productsWithIndexes)
-                    {
-                        listBox.Items.Add($"{index}. {product.Name}, {product.StockQuantity} шт");
-                    }
-
-                    // Quantity input field
-                    var lblQuantity = new Label
-                    {
-                        Text = "Количество для удаления (0 - всё):",
-                        Location = new Point(10, 220),
-                        Size = new Size(250, 20)
-                    };
-
-                    var numQuantity = new NumericUpDown
-                    {
-                        Location = new Point(10, 245),
-                        Size = new Size(120, 25),
-                        Minimum = 0,
-                        Maximum = 999999
-                    };
-
-                    var btnOk = new Button
-                    {
-                        Text = "ОК",
-                        Location = new Point(10, 280),
-                        Size = new Size(80, 30)
-                    };
-
-                    var btnCancel = new Button
-                    {
-                        Text = "Отмена",
-                        Location = new Point(100, 280),
-                        Size = new Size(80, 30)
-                    };
-
-                    // Product selection handler
-                    listBox.SelectedIndexChanged += (s, args) =>
-                    {
-                        if (listBox.SelectedIndex >= 0)
-                        {
-                            var selectedProduct = productsWithIndexes[listBox.SelectedIndex].Product;
-                            numQuantity.Maximum = selectedProduct.StockQuantity;
-                            numQuantity.Value = 0;
-                        }
-                    };
-
-                    // OK button handler - fires event to presenter
-                    btnOk.Click += (s, args) =>
-                    {
-                        if (listBox.SelectedIndex < 0)
-                        {
-                            ShowError("Предупреждение", "Выберите товар для удаления.");
-                            return;
-                        }
-
-                        var selectedProduct = productsWithIndexes[listBox.SelectedIndex].Product;
-                        int quantityToRemove = (int)numQuantity.Value;
-
-                        // Fire event to presenter
-                        DeleteProductByQuantityRequested?.Invoke(this, (selectedProduct.Id, quantityToRemove));
-                        selectForm.DialogResult = DialogResult.OK;
-                    };
-
-                    // Cancel button handler
-                    btnCancel.Click += (s, args) =>
-                    {
-                        selectForm.DialogResult = DialogResult.Cancel;
-                    };
-
-                    selectForm.Controls.Add(listBox);
-                    selectForm.Controls.Add(lblQuantity);
-                    selectForm.Controls.Add(numQuantity);
-                    selectForm.Controls.Add(btnOk);
-                    selectForm.Controls.Add(btnCancel);
-
-                    selectForm.ShowDialog(this);
-                }
-            }
-            catch (Exception ex)
-            {
-                ShowError("Ошибка", $"Ошибка при удалении товара: {ex.Message}");
-            }
-        }
-
-        #endregion
-
-        #region Dispose
-
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _presenter?.Dispose();
-            }
-            base.Dispose(disposing);
+            // This event will be handled by presenter which will call ShowDeleteByQuantityDialog
+            // For now, we fire an event with (-1, -1) to signal that we need to show dialog first
+            DeleteProductByQuantityRequested?.Invoke(this, (-1, -1));
         }
 
         #endregion

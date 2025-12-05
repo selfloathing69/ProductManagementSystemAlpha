@@ -1,9 +1,6 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using ProductManagementSystem.Logic;
-using ProductManagementSystem.Logic.Presenters;
-using ProductManagementSystem.Model;
 using ProductManagementSystem.Shared;
 
 namespace ProductManagementSystem.WinFormsApp
@@ -13,12 +10,11 @@ namespace ProductManagementSystem.WinFormsApp
     /// Implements IAddProductView interface for the MVP pattern.
     /// SOLID - S: Class is responsible only for UI of adding a new product.
     /// SOLID - D: Depends on IAddProductView abstraction, communicates with Presenter through events.
+    /// View не имеет зависимости от Model - работает только с примитивными типами.
     /// </summary>
     public partial class AddProductForm : Form, IAddProductView
     {
         #region Fields
-
-        private AddProductPresenter? _presenter;
         
         // UI elements
         private NumericUpDown numId = null!;
@@ -64,31 +60,15 @@ namespace ProductManagementSystem.WinFormsApp
 
         #endregion
 
-        #region Properties
-
-        /// <summary>
-        /// Gets the created product after successful save.
-        /// </summary>
-        public Product? CreatedProduct => _presenter?.CreatedProduct;
-
-        #endregion
-
         #region Constructor
 
         /// <summary>
-        /// MVP Constructor - Initializes the AddProductForm with the Model.
-        /// Creates the AddProductPresenter internally.
+        /// Default constructor for AddProductForm.
+        /// Initializes UI components. Presenter will be attached externally.
         /// </summary>
-        /// <param name="model">The Model interface for business logic</param>
-        public AddProductForm(IProductModel model)
+        public AddProductForm()
         {
-            if (model == null)
-                throw new ArgumentNullException(nameof(model));
-                
             InitializeComponent();
-            
-            // Create presenter (View creates Presenter for dialogs)
-            _presenter = new AddProductPresenter(this, model);
         }
 
         #endregion
@@ -330,23 +310,6 @@ namespace ProductManagementSystem.WinFormsApp
         private void BtnCancel_Click(object? sender, EventArgs e)
         {
             CancelRequested?.Invoke(this, EventArgs.Empty);
-        }
-
-        #endregion
-
-        #region Dispose
-
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _presenter?.Dispose();
-            }
-            base.Dispose(disposing);
         }
 
         #endregion

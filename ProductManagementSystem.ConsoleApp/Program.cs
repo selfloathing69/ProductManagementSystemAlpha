@@ -1,14 +1,16 @@
 using System;
 using Ninject;
-using ProductManagementSystem.DataAccessLayer;
+using ProductManagementSystem.Logic.Services;
 
 namespace ProductManagementSystem.ConsoleApp
 {
     /// <summary>
-    /// SOLID - S: Класс отвечает только за инициализацию и запуск приложения.
+    /// Консольное приложение для управления товарами.
+    /// SOLID - S: Класс отвечает только за инициализацию и запуск консольного приложения.
+    /// SOLID - D: Используем DI-контейнер для управления зависимостями.
     /// 
-    /// Точка входа консольного приложения для управления товарами.
-    /// Использует Dependency Injection для конфигурации зависимостей.
+    /// ВАЖНО: Это независимое консольное приложение с текстовым меню (MenuController).
+    /// Не путать с Presenter - Presenter запускает WinFormsApp.========================================================
     /// </summary>
     internal class Program
     {
@@ -17,20 +19,29 @@ namespace ProductManagementSystem.ConsoleApp
         /// Инициализирует DI-контейнер и запускает MenuController.
         /// </summary>
         /// <param name="args">Аргументы командной строки</param>
+        [STAThread]
         static void Main(string[] args)
         {
-            // SOLID - D: Используем DI-контейнер для управления зависимостями
-            // Создаём Ninject kernel с конфигурацией из SimpleConfigModule
-            var kernel = new StandardKernel(new SimpleConfigModule());
-
-            // Регистрируем MenuController (специфично для ConsoleApp)
-            kernel.Bind<MenuController>().ToSelf();
-
-            // Получаем MenuController через DI (все зависимости разрешаются автоматически)
-            var menuController = kernel.Get<MenuController>();
-
-            // Запускаем приложение
-            menuController.Run();
+            Console.WriteLine("Включаю... хочу чаю");
+            
+            try
+            {
+                // SOLID - D: Используем DI-контейнер
+                using var kernel = new StandardKernel(new CompositionRoot());
+                
+                // Получаем сервис для работы с товарами
+                var productService = kernel.Get<IProductService>();
+                
+                // Запускаем консольное меню
+                var menuController = new MenuController(productService);
+                menuController.Run();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}");
+                Console.WriteLine("Нажмите любую клавишу для выхода...");
+                Console.ReadKey();
+            }
         }
     }
 }

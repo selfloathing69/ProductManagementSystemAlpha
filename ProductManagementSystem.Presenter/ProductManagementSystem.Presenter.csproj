@@ -1,20 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <StartupObject>ProductManagementSystem.ConsoleApp.Program</StartupObject>
+    <UseWindowsForms>true</UseWindowsForms>
+    <StartupObject>ProductManagementSystem.Presenter.Program</StartupObject>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.1.66" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Ninject" Version="3.3.6" />
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\ProductManagementSystem.Logic\ProductManagementSystem.Logic.csproj" />
     <ProjectReference Include="..\ProductManagementSystem.DataAccessLayer\ProductManagementSystem.DataAccessLayer.csproj" />
+    <ProjectReference Include="..\ProductManagementSystem.WinFormsApp\ProductManagementSystem.WinFormsApp.csproj" />
+    <ProjectReference Include="..\ProductManagementSystem.Model\ProductManagementSystem.Model.csproj" />
+    <ProjectReference Include="..\ProductManagementSystem.Shared\ProductManagementSystem.Shared.csproj" />
   </ItemGroup>
 </Project>

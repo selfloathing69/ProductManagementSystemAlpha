@@ -1,73 +1,78 @@
-using ProductManagementSystem.Model;
-
 namespace ProductManagementSystem.Shared
 {
     /// <summary>
-    /// MVP Pattern - View Interface.
-    /// Interface for product management views to avoid circular dependencies.
-    /// Defines methods for updating the UI and events for user actions.
+    /// Шаблон MVP — Интерфейс просмотра. 
+    /// Интерфейс для представлений управления продуктом, позволяющий избежать циклических зависимостей. 
+    /// Определяет методы обновления пользовательского интерфейса и события для действий пользователя. 
+    /// Просмотр работает с объектами DTO, не зависит от модели.
     /// </summary>
-    public interface IProductView // 
+    public interface IProductView
     {
-        #region Events - User Actions
-
+        #region Events Пользв дейст
         /// <summary>
-        /// Fired when user requests to refresh the product list.
+        /// Срабатывает, когда пользователь запрашивает обновление списка товаров.
         /// </summary>
         event EventHandler? RefreshRequested;
 
         /// <summary>
-        /// Fired when user requests to add a new product.
+        /// Срабатывает, когда пользователь запрашивает добавление нового продукта.
         /// </summary>
         event EventHandler? AddProductRequested;
 
         /// <summary>
-        /// Fired when user requests to delete a product.
+        /// Срабатывает, когда пользователь запрашивает удаление продукта.
         /// </summary>
         event EventHandler<int>? DeleteProductRequested;
 
         /// <summary>
-        /// Fired when user requests to delete a specific quantity of a product.
+        /// Срабатывает, когда пользователь запрашивает удаление определенного количества товара.
         /// </summary>
         event EventHandler<(int ProductId, int Quantity)>? DeleteProductByQuantityRequested;
 
         #endregion
 
-        #region Methods - UI Updates
+        #region Methods UI Updates
 
         /// <summary>
-        /// Displays the list of products in the view.
+        /// Отображает список товаров в представлении.
         /// </summary>
-        /// <param name="products">List of products to display</param>
-        void ShowProducts(IEnumerable<Product> products);
+        /// <param name="products">Список DTO товаров для отображения</param>
+        void ShowProducts(IEnumerable<ProductDto> products);
 
         /// <summary>
-        /// Shows an error message to the user.
+        /// Показывает пользователю сообщение об ошибке.
         /// </summary>
-        /// <param name="title">Error title</param>
-        /// <param name="message">Error message</param>
+        /// <param name="title">Заголовок ошибки</param>
+        /// <param name="message">Сообщение об ошибке</param>
         void ShowError(string title, string message);
 
         /// <summary>
-        /// Shows an information message to the user.
+        /// Показывает информационное сообщение пользователю.
         /// </summary>
-        /// <param name="title">Message title</param>
-        /// <param name="message">Message content</param>
+        /// <param name="title">Заголовок сообщения</param>
+        /// <param name="message">Содержание сообщения</param>
         void ShowMessage(string title, string message);
 
         /// <summary>
-        /// Shows a confirmation dialog to the user.
+        /// Показывает пользователю диалоговое окно подтверждения.
         /// </summary>
-        /// <param name="title">Dialog title</param>
-        /// <param name="message">Confirmation message</param>
-        /// <returns>True if user confirms, false otherwise</returns>
+        /// <param name="title">Заголовок диалогового окна</param>
+        /// <param name="message">Сообщение подтверждения</param>
+        /// <returns>True, если пользователь подтверждает, false в противном случае</returns>
         bool ShowConfirmation(string title, string message);
 
         /// <summary>
-        /// Gets the ID of the currently selected product.
+        /// Получает идентификатор текущего выбранного товара.
         /// </summary>
-        /// <returns>Selected product ID or null if no selection</returns>
+        /// <returns>Идентификатор выбранного товара или null, если ничего не выбрано</returns>
         int? GetSelectedProductId();
+
+        /// <summary>
+        /// Отображает диалоговое окно удаления по количеству.
+        /// </summary>
+        /// <param name="products">Список товаров с индексами для выбора</param>
+        /// <returns>Кортеж с идентификатором выбранного товара и количеством, или null в случае отмены</returns>
+        (int ProductId, int Quantity)? ShowDeleteByQuantityDialog(IEnumerable<(int Index, ProductDto Product)> products);
 
         #endregion
     }

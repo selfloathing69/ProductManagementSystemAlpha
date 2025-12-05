@@ -63,6 +63,8 @@ namespace ProductManagementSystem.ConsoleApp
         /// <summary>
         /// Отображает главное меню приложения.
         /// </summary>
+        /// 
+
         private void DisplayMenu()
         {
             Console.WriteLine("\n┌─────────────────────────────────────────┐");
