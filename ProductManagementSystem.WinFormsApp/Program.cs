@@ -1,7 +1,5 @@
 using System;
 using System.Windows.Forms;
-using Ninject;
-using ProductManagementSystem.DataAccessLayer;
 using ProductManagementSystem.Logic;
 using ProductManagementSystem.Logic.Presenters;
 using ProductManagementSystem.Shared;
@@ -9,51 +7,105 @@ using ProductManagementSystem.Shared;
 namespace ProductManagementSystem.WinFormsApp
 {
     /// <summary>
-    /// MVP Pattern - Composition Root / Entry Point.
-    /// Contains the main entry point and dependency injection setup.
+    /// MVP Pattern - Application Runner.
+    /// Contains the method to run the Windows Forms application.
+    /// This is called by the Console Presenter application.
     /// SOLID - D: Uses DI container to wire up MVP components.
     /// </summary>
-    static class Program
+    public static class WinFormsRunner
     {
         /// <summary>
-        /// Main entry point for the Windows Forms application.
-        /// Sets up Dependency Injection and creates MVP triad.
+        /// Runs the Windows Forms application with the specified model.
         /// </summary>
-        [STAThread]
-        static void Main()
+        /// <param name="model">The model interface for business logic</param>
+        public static void Run(IProductModel model)
         {
+            if (model == null)
+                throw new ArgumentNullException(nameof(model));
+
             // Initialize application configuration for modern .NET versions
-            ApplicationConfiguration.Initialize();
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
             
-            // Create Ninject DI kernel with configuration module
-            // SimpleConfigModule already registers IProductModel -> ProductModelMvp
-            using (var kernel = new StandardKernel(new SimpleConfigModule()))
+            try
             {
-                try
+                // Create the View (MainForm)
+                var view = new MainForm();
+                
+                // Create the Presenter, wiring View and Model
+                using var presenter = new ProductPresenter(view, model);
+                
+                // Subscribe to AddProductRequested to handle the add dialog
+                view.AddProductRequested += (sender, e) =>
                 {
-                    // Create the View (MainForm)
-                    var view = new MainForm();
-                    
-                    // Get the Model from DI container
-                    var model = kernel.Get<IProductModel>();
-                    
-                    // Create the Presenter, wiring View and Model
-                    var presenter = new ProductPresenter(view, model);
-                    
-                    // Set the presenter on the view for dialog handling
-                    view.SetPresenter(presenter, model);
-                    
-                    // Run the application
-                    Application.Run(view);
-                }
-                catch (Exception ex)
+                    var addView = new AddProductForm();
+                    using var addPresenter = presenter.CreateAddProductPresenter(addView);
+                    addView.ShowDialog();
+                };
+
+                // Subscribe to DeleteByQuantityRequested to handle the dialog
+                view.DeleteProductByQuantityRequested += (sender, args) =>
                 {
-                    MessageBox.Show(
-                        $"Ошибка запуска приложения: {ex.Message}\n\n{ex.StackTrace}",
-                        "Критическая ошибка",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
+                    if (args.ProductId == -1)
+                    {
+                        // Signal to show dialog first
+                        var productsWithIndexes = presenter.GetProductsWithIndexes();
+                        var result = view.ShowDeleteByQuantityDialog(productsWithIndexes);
+                        if (result.HasValue)
+                        {
+                            // Fire the real delete event
+                            OnDeleteByQuantityConfirmed(presenter, view, result.Value);
+                        }
+                    }
+                };
+                
+                // Run the application
+                Application.Run(view);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Ошибка запуска приложения: {ex.Message}\n\n{ex.StackTrace}",
+                    "Критическая ошибка",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private static void OnDeleteByQuantityConfirmed(ProductPresenter presenter, IProductView view, (int ProductId, int Quantity) args)
+        {
+            try
+            {
+                var product = presenter.GetProduct(args.ProductId);
+                if (product == null)
+                {
+                    view.ShowError("Ошибка", "Товар не найден.");
+                    return;
                 }
+
+                int quantityToRemove = args.Quantity;
+                if (quantityToRemove == 0)
+                {
+                    quantityToRemove = product.StockQuantity;
+                }
+
+                if (view.ShowConfirmation("Подтверждение удаления",
+                    $"Вы хотите удалить {product.Name} в количестве {quantityToRemove}, вы уверены?"))
+                {
+                    if (presenter.RemoveQuantityFromProduct(args.ProductId, quantityToRemove))
+                    {
+                        view.ShowMessage("Успех", "Товар удален в указанном количестве.");
+                    }
+                    else
+                    {
+                        view.ShowError("Ошибка", "Не удалось удалить товар.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                view.ShowError("Ошибка", $"Ошибка при удалении товара: {ex.Message}");
             }
         }
     }

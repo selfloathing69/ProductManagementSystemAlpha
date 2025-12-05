@@ -1,36 +1,48 @@
 using System;
 using Ninject;
 using ProductManagementSystem.DataAccessLayer;
+using ProductManagementSystem.Logic;
+using ProductManagementSystem.WinFormsApp;
 
 namespace ProductManagementSystem.ConsoleApp
 {
     /// <summary>
+    /// MVP Pattern - Presenter Application (Composition Root).
     /// SOLID - S: Класс отвечает только за инициализацию и запуск приложения.
+    /// SOLID - D: Используем DI-контейнер для управления зависимостями.
     /// 
-    /// Точка входа консольного приложения для управления товарами.
-    /// Использует Dependency Injection для конфигурации зависимостей.
+    /// По требованиям паттерна MVP - консольное приложение является Presenter,
+    /// которое при запуске создает и запускает WinForm с ProductView.
     /// </summary>
     internal class Program
     {
         /// <summary>
-        /// Главная точка входа в консольное приложение.
-        /// Инициализирует DI-контейнер и запускает MenuController.
+        /// Главная точка входа в приложение.
+        /// Инициализирует DI-контейнер и запускает WinForms UI.
         /// </summary>
         /// <param name="args">Аргументы командной строки</param>
+        [STAThread]
         static void Main(string[] args)
         {
+            Console.WriteLine("Запускаем Продакт манагемент систем.");
+            Console.WriteLine("Запускаем ДИ контейнер");
+            
             // SOLID - D: Используем DI-контейнер для управления зависимостями
             // Создаём Ninject kernel с конфигурацией из SimpleConfigModule
-            var kernel = new StandardKernel(new SimpleConfigModule());
+            using var kernel = new StandardKernel(new SimpleConfigModule());
 
-            // Регистрируем MenuController (специфично для ConsoleApp)
-            kernel.Bind<MenuController>().ToSelf();
+            Console.WriteLine("Смотрим Модел");
+            
+            // Получаем Model через DI (все зависимости разрешаются автоматически)
+            var model = kernel.Get<IProductModel>();
 
-            // Получаем MenuController через DI (все зависимости разрешаются автоматически)
-            var menuController = kernel.Get<MenuController>();
-
-            // Запускаем приложение
-            menuController.Run();
+            Console.WriteLine("Запущено");
+            
+            // Запускаем WinForms UI
+            // MVP: ConsoleApp (Presenter) запускает WinForms (View) с Model
+            WinFormsRunner.Run(model);
+            
+            Console.WriteLine("Закрыто");
         }
     }
 }

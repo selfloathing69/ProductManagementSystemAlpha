@@ -4,13 +4,10 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProductManagementSystem.Logic\ProductManagementSystem.Logic.csproj" />
-    <ProjectReference Include="..\ProductManagementSystem.DataAccessLayer\ProductManagementSystem.DataAccessLayer.csproj" />
     <ProjectReference Include="..\ProductManagementSystem.Shared\ProductManagementSystem.Shared.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Ninject" Version="3.3.6" />
   </ItemGroup>
 </Project>

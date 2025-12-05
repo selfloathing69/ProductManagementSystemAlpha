@@ -8,6 +8,7 @@ namespace ProductManagementSystem.Logic.Presenters
     /// MVP Pattern - Main Presenter.
     /// Connects the View (IProductView) and Model (IProductModel).
     /// Handles user actions from the View and updates the View based on Model changes.
+    /// Преобразует доменные объекты Product в DTO для View.
     /// 
     /// SOLID - D: Depends on abstractions (IProductView, IProductModel), not concrete implementations.
     /// </summary>
@@ -37,12 +38,55 @@ namespace ProductManagementSystem.Logic.Presenters
             LoadProducts();
         }
 
+        #region Product <-> ProductDto Mapping
+
+        /// <summary>
+        /// Converts Product domain object to ProductDto for View.
+        /// </summary>
+        private static ProductDto ToDto(Product product)
+        {
+            return new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                Category = product.Category,
+                StockQuantity = product.StockQuantity
+            };
+        }
+
+        /// <summary>
+        /// Converts ProductDto to Product domain object for Model.
+        /// </summary>
+        private static Product ToProduct(ProductDto dto)
+        {
+            return new Product
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                Description = dto.Description,
+                Price = dto.Price,
+                Category = dto.Category,
+                StockQuantity = dto.StockQuantity
+            };
+        }
+
+        /// <summary>
+        /// Converts list of Products to list of ProductDtos.
+        /// </summary>
+        private static IEnumerable<ProductDto> ToDtoList(IEnumerable<Product> products)
+        {
+            return products.Select(ToDto);
+        }
+
+        #endregion
+
         #region View Event Subscriptions
 
         private void SubscribeToViewEvents()
         {
             _view.RefreshRequested += OnRefreshRequested;
-            _view.AddProductRequested += OnAddProductRequested;
             _view.DeleteProductRequested += OnDeleteProductRequested;
             _view.DeleteProductByQuantityRequested += OnDeleteProductByQuantityRequested;
         }
@@ -50,7 +94,6 @@ namespace ProductManagementSystem.Logic.Presenters
         private void UnsubscribeFromViewEvents()
         {
             _view.RefreshRequested -= OnRefreshRequested;
-            _view.AddProductRequested -= OnAddProductRequested;
             _view.DeleteProductRequested -= OnDeleteProductRequested;
             _view.DeleteProductByQuantityRequested -= OnDeleteProductByQuantityRequested;
         }
@@ -81,11 +124,12 @@ namespace ProductManagementSystem.Logic.Presenters
             _view.ShowMessage("Обновление", "Данные успешно обновлены.");
         }
 
-        private void OnAddProductRequested(object? sender, EventArgs e)
+        /// <summary>
+        /// Creates an AddProductPresenter for the given view.
+        /// </summary>
+        public AddProductPresenter CreateAddProductPresenter(IAddProductView addView)
         {
-            // The View will handle showing the add form dialog.
-            // When the add form is closed, it should call back to add the product.
-            // This event is mainly to notify the presenter that an add was requested.
+            return new AddProductPresenter(addView, _model);
         }
 
         private void OnDeleteProductRequested(object? sender, int productId)
@@ -180,7 +224,7 @@ namespace ProductManagementSystem.Logic.Presenters
             try
             {
                 var products = _model.GetAllProducts();
-                _view.ShowProducts(products);
+                _view.ShowProducts(ToDtoList(products));
             }
             catch (Exception ex)
             {
@@ -191,13 +235,13 @@ namespace ProductManagementSystem.Logic.Presenters
         /// <summary>
         /// Adds a product to the model.
         /// </summary>
-        /// <param name="product">Product to add</param>
+        /// <param name="productDto">Product DTO to add</param>
         /// <returns>True if product was added successfully</returns>
-        public bool AddProduct(Product product)
+        public bool AddProduct(ProductDto productDto)
         {
             try
             {
-                _model.AddProduct(product);
+                _model.AddProduct(ToProduct(productDto));
                 return true;
             }
             catch (Exception ex)
@@ -211,10 +255,11 @@ namespace ProductManagementSystem.Logic.Presenters
         /// Gets a product by ID.
         /// </summary>
         /// <param name="id">Product ID</param>
-        /// <returns>Product or null</returns>
-        public Product? GetProduct(int id)
+        /// <returns>ProductDto or null</returns>
+        public ProductDto? GetProduct(int id)
         {
-            return _model.GetProductById(id);
+            var product = _model.GetProductById(id);
+            return product != null ? ToDto(product) : null;
         }
 
         /// <summary>
@@ -232,10 +277,11 @@ namespace ProductManagementSystem.Logic.Presenters
         /// </summary>
         /// <param name="name">Product name</param>
         /// <param name="category">Product category</param>
-        /// <returns>Product or null</returns>
-        public Product? FindProductByNameAndCategory(string name, string category)
+        /// <returns>ProductDto or null</returns>
+        public ProductDto? FindProductByNameAndCategory(string name, string category)
         {
-            return _model.FindProductByNameAndCategory(name, category);
+            var product = _model.FindProductByNameAndCategory(name, category);
+            return product != null ? ToDto(product) : null;
         }
 
         /// <summary>
@@ -250,12 +296,13 @@ namespace ProductManagementSystem.Logic.Presenters
         }
 
         /// <summary>
-        /// Gets products with their display indexes.
+        /// Gets products with their display indexes as DTOs.
         /// </summary>
-        /// <returns>List of tuples with index and product</returns>
-        public List<(int Index, Product Product)> GetProductsWithIndexes()
+        /// <returns>List of tuples with index and product DTO</returns>
+        public List<(int Index, ProductDto Product)> GetProductsWithIndexes()
         {
-            return _model.GetProductsWithIndexes();
+            var products = _model.GetProductsWithIndexes();
+            return products.Select(p => (p.Index, ToDto(p.Product))).ToList();
         }
 
         /// <summary>

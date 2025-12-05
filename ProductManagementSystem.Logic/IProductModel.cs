@@ -1,11 +1,12 @@
 using ProductManagementSystem.Model;
 
-namespace ProductManagementSystem.Shared
+namespace ProductManagementSystem.Logic
 {
     /// <summary>
     /// MVP Pattern - Model Interface (Business Logic Facade).
     /// Defines the contract for the Model layer to avoid circular dependencies.
     /// The Model raises events when data changes, which the Presenter can listen to.
+    /// Model работает с доменными объектами Product, Presenter преобразует их в DTO для View.
     /// </summary>
     public interface IProductModel
     {

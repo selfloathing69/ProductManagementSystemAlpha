@@ -8,6 +8,7 @@ namespace ProductManagementSystem.Logic.Presenters
     /// MVP Pattern - Add Product Dialog Presenter.
     /// Connects the AddProduct View (IAddProductView) and Model (IProductModel).
     /// Handles validation and product addition logic.
+    /// View не имеет зависимости от Model - работает только с примитивными типами.
     /// 
     /// SOLID - D: Depends on abstractions (IAddProductView, IProductModel), not concrete implementations.
     /// </summary>
@@ -18,9 +19,9 @@ namespace ProductManagementSystem.Logic.Presenters
         private bool _disposed;
 
         /// <summary>
-        /// Gets the created product after successful save.
+        /// Gets the created product DTO after successful save.
         /// </summary>
-        public Product? CreatedProduct { get; private set; }
+        public ProductDto? CreatedProduct { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of AddProductPresenter with the specified View and Model.
@@ -35,6 +36,26 @@ namespace ProductManagementSystem.Logic.Presenters
             // Subscribe to View events
             SubscribeToViewEvents();
         }
+
+        #region Product <-> ProductDto Mapping
+
+        /// <summary>
+        /// Converts Product domain object to ProductDto for View.
+        /// </summary>
+        private static ProductDto ToDto(Product product)
+        {
+            return new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                Category = product.Category,
+                StockQuantity = product.StockQuantity
+            };
+        }
+
+        #endregion
 
         #region View Event Subscriptions
 
@@ -101,7 +122,8 @@ namespace ProductManagementSystem.Logic.Presenters
                             {
                                 if (_model.AddQuantityToProduct(existingProduct.Id, _view.StockQuantity))
                                 {
-                                    CreatedProduct = _model.GetProductById(existingProduct.Id);
+                                    var updatedProduct = _model.GetProductById(existingProduct.Id);
+                                    CreatedProduct = updatedProduct != null ? ToDto(updatedProduct) : null;
                                     _view.ShowMessage("Успех",
                                         $"Количество товара обновлено. Новое количество: {CreatedProduct?.StockQuantity ?? 0}");
                                     _view.CloseWithSuccess();
@@ -126,7 +148,8 @@ namespace ProductManagementSystem.Logic.Presenters
                     StockQuantity = _view.StockQuantity
                 };
 
-                CreatedProduct = _model.AddProduct(product);
+                var addedProduct = _model.AddProduct(product);
+                CreatedProduct = ToDto(addedProduct);
                 _view.ShowMessage("Успех", "Товар успешно добавлен.");
                 _view.CloseWithSuccess();
             }

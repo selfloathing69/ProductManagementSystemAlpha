@@ -1,13 +1,12 @@
-using ProductManagementSystem.Model;
-
 namespace ProductManagementSystem.Shared
 {
     /// <summary>
     /// MVP Pattern - View Interface.
     /// Interface for product management views to avoid circular dependencies.
     /// Defines methods for updating the UI and events for user actions.
+    /// View работает с DTO объектами, не имеет зависимости от Model.
     /// </summary>
-    public interface IProductView // 
+    public interface IProductView
     {
         #region Events - User Actions
 
@@ -38,8 +37,8 @@ namespace ProductManagementSystem.Shared
         /// <summary>
         /// Displays the list of products in the view.
         /// </summary>
-        /// <param name="products">List of products to display</param>
-        void ShowProducts(IEnumerable<Product> products);
+        /// <param name="products">List of product DTOs to display</param>
+        void ShowProducts(IEnumerable<ProductDto> products);
 
         /// <summary>
         /// Shows an error message to the user.
@@ -68,6 +67,13 @@ namespace ProductManagementSystem.Shared
         /// </summary>
         /// <returns>Selected product ID or null if no selection</returns>
         int? GetSelectedProductId();
+
+        /// <summary>
+        /// Shows the delete by quantity dialog.
+        /// </summary>
+        /// <param name="products">List of products with indexes for selection</param>
+        /// <returns>Tuple with selected product ID and quantity, or null if cancelled</returns>
+        (int ProductId, int Quantity)? ShowDeleteByQuantityDialog(IEnumerable<(int Index, ProductDto Product)> products);
 
         #endregion
     }

@@ -1,10 +1,9 @@
-using ProductManagementSystem.Model;
-
 namespace ProductManagementSystem.Shared
 {
     /// <summary>
     /// MVP Pattern - Interface for Add Product dialog view.
     /// Defines methods and events for adding a new product.
+    /// View работает с примитивными типами данных, не имеет зависимости от Model.
     /// </summary>
     public interface IAddProductView
     {

@@ -6,7 +6,6 @@ using ProductManagementSystem.Logic.Mappers;
 using ProductManagementSystem.Model;
 using ProductManagementSystem.DataAccessLayer.EF;
 using ProductManagementSystem.DataAccessLayer.Dapper;
-using ProductManagementSystem.Shared;
 
 namespace ProductManagementSystem.DataAccessLayer
 {
@@ -21,7 +20,7 @@ namespace ProductManagementSystem.DataAccessLayer
     /// Наша задача говорить, какие классы используем
     /// для каждого интерфейса (зависимости)
     /// </summary>
-    public class SimpleConfigModule : NinjectModule /// ============================================================
+    public class SimpleConfigModule : NinjectModule
     {
         /// <summary>
         /// Метод Load() вызывается Ninject при загрузке модуля.

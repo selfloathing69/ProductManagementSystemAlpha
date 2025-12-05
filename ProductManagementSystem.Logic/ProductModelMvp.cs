@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ProductManagementSystem.Model;
-using ProductManagementSystem.Shared;
 
 namespace ProductManagementSystem.Logic
 {
