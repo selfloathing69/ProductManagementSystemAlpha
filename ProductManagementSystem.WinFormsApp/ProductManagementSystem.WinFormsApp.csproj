@@ -6,8 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ProductManagementSystem.Core\ProductManagementSystem.Core.csproj" />
+    <ProjectReference Include="..\ProductManagementSystem.Logic\ProductManagementSystem.Logic.csproj" />
     <ProjectReference Include="..\ProductManagementSystem.DataAccessLayer\ProductManagementSystem.DataAccessLayer.csproj" />
+    <ProjectReference Include="..\ProductManagementSystem.Shared\ProductManagementSystem.Shared.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Ninject" Version="3.3.6" />

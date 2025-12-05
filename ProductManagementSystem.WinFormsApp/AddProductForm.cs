@@ -2,68 +2,167 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using ProductManagementSystem.Logic;
+using ProductManagementSystem.Logic.Presenters;
 using ProductManagementSystem.Model;
+using ProductManagementSystem.Shared;
 
 namespace ProductManagementSystem.WinFormsApp
 {
     /// <summary>
-    /// SOLID - S: Класс отвечает только за UI формы добавления товара.
-    /// 
-    /// Форма для добавления нового товара
+    /// MVP РїР°С‚С‚РµСЂРЅ - СЂРµР°Р»РёР·Р°С†РёСЏ РїСЂРµРґСЃС‚Р°РІР»РµРЅРёСЏ РґРѕР±Р°РІР»РµРЅРёСЏ С‚РѕРІР°СЂР°.
+    /// Р РµР°Р»РёР·СѓРµС‚ РёРЅС‚РµСЂС„РµР№СЃ IAddProductView РґР»СЏ MVP РїР°С‚С‚РµСЂРЅР°.
+    /// SOLID - S: РљР»Р°СЃСЃ РѕС‚РІРµС‡Р°РµС‚ С‚РѕР»СЊРєРѕ Р·Р° UI РґРѕР±Р°РІР»РµРЅРёСЏ РЅРѕРІРѕРіРѕ С‚РѕРІР°СЂР°.
+    /// SOLID - D: Р—Р°РІРёСЃРёС‚ РѕС‚ Р°Р±СЃС‚СЂР°РєС†РёРё IAddProductView, РІР·Р°РёРјРѕРґРµР№СЃС‚РІСѓРµС‚ СЃ РїСЂРµР·РµРЅС‚РµСЂРѕРј С‡РµСЂРµР· СЃРѕР±С‹С‚РёСЏ.
     /// </summary>
-    public partial class AddProductForm : Form
+    public partial class AddProductForm : Form, IAddProductView
     {
-        #region Поля
+        #region Fields
 
-        /// <summary>
-        /// SOLID - D: Зависимость от ProductLogic через конструктор (Constructor Injection).
-        /// </summary>
-        private readonly ProductLogic _logic;
+        private AddProductPresenter? _presenter;
         
-        // Элементы управления
-        private NumericUpDown numId;
-        private TextBox txtName;
-        private TextBox txtDescription;
-        private ComboBox cmbCategory;
-        private NumericUpDown numPrice;
-        private NumericUpDown numStock;
-        private Button btnOk;
-        private Button btnCancel;
+        // Р­Р»РµРјРµРЅС‚С‹ UI
+        private NumericUpDown numId = null!;
+        private TextBox txtName = null!;
+        private TextBox txtDescription = null!;
+        private ComboBox cmbCategory = null!;
+        private NumericUpDown numPrice = null!;
+        private NumericUpDown numStock = null!;
+        private Button btnOk = null!;
+        private Button btnCancel = null!;
 
         #endregion
 
-        #region Свойства
+        #region IAddProductView Events
 
-        /// <summary>
-        /// Созданный товар (доступен после успешного добавления)
-        /// </summary>
-        public Product? CreatedProduct { get; private set; }
+        /// <inheritdoc/>
+        public event EventHandler? SaveRequested;
+
+        /// <inheritdoc/>
+        public event EventHandler? CancelRequested;
 
         #endregion
 
-        #region Конструктор
+        #region IAddProductView Properties
+
+        /// <inheritdoc/>
+        public int ProductId => (int)numId.Value;
+
+        /// <inheritdoc/>
+        public new string ProductName => txtName.Text;
+
+        /// <inheritdoc/>
+        public string ProductDescription => txtDescription.Text;
+
+        /// <inheritdoc/>
+        public decimal ProductPrice => numPrice.Value;
+
+        /// <inheritdoc/>
+        public string ProductCategory => cmbCategory.SelectedItem?.ToString() ?? string.Empty;
+
+        /// <inheritdoc/>
+        public int StockQuantity => (int)numStock.Value;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
-        /// SOLID - D: Constructor Injection - внедрение зависимости ProductLogic через конструктор.
-        /// 
-        /// Конструктор формы добавления товара
+        /// РџРѕР»СѓС‡Р°РµС‚ СЃРѕР·РґР°РЅРЅС‹Р№ С‚РѕРІР°СЂ РїРѕСЃР»Рµ СѓСЃРїРµС€РЅРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ.
         /// </summary>
-        /// <param name="logic">Экземпляр бизнес-логики</param>
-        public AddProductForm(ProductLogic logic)
+        public Product? CreatedProduct => _presenter?.CreatedProduct;
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// MVP РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ - РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ AddProductForm СЃ РјРѕРґРµР»СЊСЋ.
+        /// РЎРѕР·РґР°С‘С‚ AddProductPresenter РІРЅСѓС‚СЂРё.
+        /// </summary>
+        /// <param name="model">The Model interface for business logic</param>
+        public AddProductForm(IProductModel model)
         {
-            _logic = logic ?? throw new ArgumentNullException(nameof(logic));
+            if (model == null)
+                throw new ArgumentNullException(nameof(model));
+                
             InitializeComponent();
+            
+            // РЎРѕР·РґР°РЅРёРµ РїСЂРµР·РµРЅС‚РµСЂР° (РїСЂРµРґСЃС‚Р°РІР»РµРЅРёРµ СЃРѕР·РґР°С‘С‚ РїСЂРµР·РµРЅС‚РµСЂ РґР»СЏ РґРёР°Р»РѕРіРѕРІ) =================================================
+            _presenter = new AddProductPresenter(this, model);
         }
 
         #endregion
 
-        #region Инициализация компонентов
+        #region IAddProductView Implementation
+
+        /// <inheritdoc/>
+        public void ShowError(string title, string message)
+        {
+            MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        /// <inheritdoc/>
+        public void ShowMessage(string title, string message)
+        {
+            MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        /// <inheritdoc/>
+        public bool ShowConfirmation(string title, string message)
+        {
+            return MessageBox.Show(message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
+        }
+
+        /// <inheritdoc/>
+        public void CloseWithSuccess()
+        {
+            this.DialogResult = DialogResult.OK;
+            this.Close();
+        }
+
+        /// <inheritdoc/>
+        public void CloseWithCancel()
+        {
+            this.DialogResult = DialogResult.Cancel;
+            this.Close();
+        }
+
+        /// <inheritdoc/>
+        public void FocusField(string fieldName)
+        {
+            switch (fieldName.ToLowerInvariant())
+            {
+                case "id":
+                    numId.Focus();
+                    break;
+                case "name":
+                    txtName.Focus();
+                    break;
+                case "description":
+                    txtDescription.Focus();
+                    break;
+                case "price":
+                    numPrice.Focus();
+                    break;
+                case "category":
+                    cmbCategory.Focus();
+                    break;
+                case "stockquantity":
+                case "quantity":
+                    numStock.Focus();
+                    break;
+            }
+        }
+
+        #endregion
+
+        #region Initialize Components
 
         private void InitializeComponent()
         {
             this.SuspendLayout();
 
-            this.Text = "Новый товар";
+            this.Text = "РќРѕРІС‹Р№ С‚РѕРІР°СЂ";
             this.ClientSize = new Size(460, 340);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -74,7 +173,7 @@ namespace ProductManagementSystem.WinFormsApp
 
             Label lblTitle = new Label
             {
-                Text = "Новый товар",
+                Text = "РќРѕРІС‹Р№ С‚РѕРІР°СЂ",
                 Location = new Point(10, 10),
                 Size = new Size(200, 25),
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold)
@@ -97,7 +196,7 @@ namespace ProductManagementSystem.WinFormsApp
 
             Label lblName = new Label
             {
-                Text = "Название:",
+                Text = "РќР°Р·РІР°РЅРёРµ:",
                 Location = new Point(10, 80),
                 Size = new Size(100, 20)
             };
@@ -107,10 +206,9 @@ namespace ProductManagementSystem.WinFormsApp
                 Size = new Size(300, 25)
             };
 
-
             Label lblDesc = new Label
             {
-                Text = "Описание:",
+                Text = "РћРїРёСЃР°РЅРёРµ:",
                 Location = new Point(10, 115),
                 Size = new Size(100, 20)
             };
@@ -120,10 +218,9 @@ namespace ProductManagementSystem.WinFormsApp
                 Size = new Size(300, 25)
             };
 
-
             Label lblPrice = new Label
             {
-                Text = "Цена:",
+                Text = "Р¦РµРЅР°:",
                 Location = new Point(10, 150),
                 Size = new Size(100, 20)
             };
@@ -138,7 +235,7 @@ namespace ProductManagementSystem.WinFormsApp
 
             Label lblCategory = new Label
             {
-                Text = "Категория:",
+                Text = "РљР°С‚РµРіРѕСЂРёСЏ:",
                 Location = new Point(10, 185),
                 Size = new Size(100, 20)
             };
@@ -150,17 +247,17 @@ namespace ProductManagementSystem.WinFormsApp
             };
             cmbCategory.Items.AddRange(new object[]
             {
-                "Электроника",
-                "Периферия",
-                "Аудио",
-                "Комплектующие",
-                "Аксессуары",
-                "Разное"
+                "Р­Р»РµРєС‚СЂРѕРЅРёРєР°",
+                "РџРµСЂРёС„РµСЂРёСЏ",
+                "РђСѓРґРёРѕ",
+                "РљРѕРјРїР»РµРєС‚СѓСЋС‰РёРµ",
+                "РђРєСЃРµСЃСЃСѓР°СЂС‹",
+                "Р”СЂСѓРіРѕРµ"
             });
 
             Label lblStock = new Label
             {
-                Text = "Количество:",
+                Text = "РљРѕР»РёС‡РµСЃС‚РІРѕ:",
                 Location = new Point(10, 220),
                 Size = new Size(100, 20)
             };
@@ -172,10 +269,10 @@ namespace ProductManagementSystem.WinFormsApp
                 Minimum = 0M
             };
 
-            // Кнопки
+            // Buttons
             btnOk = new Button
             {
-                Text = "ОК",
+                Text = "РћРљ",
                 Location = new Point(120, 260),
                 Size = new Size(90, 30),
                 UseVisualStyleBackColor = true
@@ -184,14 +281,12 @@ namespace ProductManagementSystem.WinFormsApp
 
             btnCancel = new Button
             {
-                Text = "Отмена",
+                Text = "РћС‚РјРµРЅР°",
                 Location = new Point(240, 260),
                 Size = new Size(90, 30),
                 UseVisualStyleBackColor = true
             };
             btnCancel.Click += BtnCancel_Click;
-
-            // Добавление всех элементов на форму
             this.Controls.Add(lblTitle);
             this.Controls.Add(lblId);
             this.Controls.Add(numId);
@@ -208,7 +303,6 @@ namespace ProductManagementSystem.WinFormsApp
             this.Controls.Add(btnOk);
             this.Controls.Add(btnCancel);
 
-            // Установка Accept и Cancel кнопок для удобства
             this.AcceptButton = btnOk;
             this.CancelButton = btnCancel;
 
@@ -217,144 +311,40 @@ namespace ProductManagementSystem.WinFormsApp
 
         #endregion
 
-        #region Обработчики событий
+        #region Event Handlers - Fire View Events
 
         /// <summary>
-        /// Подтверждение добавления товара
+        /// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ РЅР°Р¶Р°С‚РёРµ РєРЅРѕРїРєРё OK - РіРµРЅРµСЂРёСЂСѓРµС‚ СЃРѕР±С‹С‚РёРµ SaveRequested.
         /// </summary>
         private void BtnOk_Click(object? sender, EventArgs e)
         {
-            try
-            {
-                // Валидация полей
-                if (string.IsNullOrWhiteSpace(txtName.Text))
-                {
-                    MessageBox.Show(
-                        "Поле 'Название' обязательно для заполнения!",
-                        "Ошибка",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                    txtName.Focus();
-                    return;
-                }
-
-                if (cmbCategory.SelectedItem == null)
-                {
-                    MessageBox.Show(
-                        "Поле 'Категория' обязательно для заполнения!",
-                        "Ошибка",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                    cmbCategory.Focus();
-                    return;
-                }
-
-                int id = (int)numId.Value;
-
-                // Проверка существования ID
-                if (_logic.IdExists(id))
-                {
-                    DialogResult result = MessageBox.Show(
-                        $"ID {id} уже существует. Хотите присвоить новому товару другой ID?",
-                        "ID уже существует",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Question);
-
-                    if (result == DialogResult.Yes)
-                    {
-                        numId.Focus();
-                        return;
-                    }
-                    else
-                    {
-                        // Проверка возможности суммирования количества
-                        string name = txtName.Text.Trim();
-                        string category = cmbCategory.SelectedItem.ToString()!.Trim();
-
-                        var existingProduct = _logic.FindProductByNameAndCategory(name, category);
-
-                        if (existingProduct != null &&
-                            !category.Equals("Разное", StringComparison.OrdinalIgnoreCase))
-                        {
-                            DialogResult sumResult = MessageBox.Show(
-                                $"Такой товар '{name}' уже существует в количестве: {existingProduct.StockQuantity}.\n" +
-                                $"Желаете суммировать введённое вами количество с уже имеющимся?",
-                                "Товар уже существует",
-                                MessageBoxButtons.YesNo,
-                                MessageBoxIcon.Question);
-
-                            if (sumResult == DialogResult.Yes)
-                            {
-                                bool added = _logic.AddQuantityToProduct(existingProduct.Id, (int)numStock.Value);
-                                if (added)
-                                {
-                                    var updatedProduct = _logic.GetProduct(existingProduct.Id);
-                                    MessageBox.Show(
-                                        $"Количество товара увеличено. Новое количество: {updatedProduct?.StockQuantity ?? 0}",
-                                        "Готово",
-                                        MessageBoxButtons.OK,
-                                        MessageBoxIcon.Information);
-                                    
-                                    CreatedProduct = updatedProduct;
-                                    this.DialogResult = DialogResult.OK;
-                                    this.Close();
-                                }
-                                return;
-                            }
-                        }
-
-                        MessageBox.Show(
-                            "Операция отменена.",
-                            "Отмена",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Information);
-                        return;
-                    }
-                }
-
-                // Создание нового товара
-                var product = new Product
-                {
-                    Id = id,
-                    Name = txtName.Text.Trim(),
-                    Description = txtDescription.Text.Trim(),
-                    Price = numPrice.Value,
-                    Category = cmbCategory.SelectedItem.ToString()!.Trim(),
-                    StockQuantity = (int)numStock.Value
-                };
-
-                _logic.AddProduct(product);
-                CreatedProduct = product;
-
-                MessageBox.Show(
-                    "Товар успешно добавлен.",
-                    "Готово",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
-
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"Не удалось добавить товар: {ex.Message}",
-                    "Ошибка",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
+            SaveRequested?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
-        /// Отмена добавления товара
+        /// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ РЅР°Р¶Р°С‚РёРµ РєРЅРѕРїРєРё РѕС‚РјРµРЅС‹ - РіРµРЅРµСЂРёСЂСѓРµС‚ СЃРѕР±С‹С‚РёРµ CancelRequested.
         /// </summary>
         private void BtnCancel_Click(object? sender, EventArgs e)
         {
-            this.DialogResult = DialogResult.Cancel;
-            this.Close();
+            CancelRequested?.Invoke(this, EventArgs.Empty);
         }
 
+        #endregion
 
+        #region Dispose
+
+        /// <summary>
+        /// РћС‡РёСЃС‚РєР° РёСЃРїРѕР»СЊР·СѓРµРјС‹С… СЂРµСЃСѓСЂСЃРѕРІ.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _presenter?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
 
         #endregion
     }

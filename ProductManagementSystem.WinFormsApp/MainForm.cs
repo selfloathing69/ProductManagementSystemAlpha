@@ -1,76 +1,159 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using ProductManagementSystem.Logic;
+using ProductManagementSystem.Logic.Presenters;
+using ProductManagementSystem.Model;
+using ProductManagementSystem.Shared;
 
 namespace ProductManagementSystem.WinFormsApp
 {
     /// <summary>
-    /// SOLID - S: Класс отвечает только за UI главного окна WinForms приложения
-    /// 
-    /// Главное окно приложения для управления товарами
+    /// MVP паттерн - реализация главного представления.
+    /// Реализует интерфейс IProductView для MVP паттерна.
+    /// SOLID - S: Класс отвечает только за UI главного окна.
+    /// SOLID - D: Зависит от абстракции IProductView, взаимодействует с презентером через события.
     /// </summary>
-    public partial class MainForm : Form
+    public partial class MainForm : Form, IProductView
     {
-        #region Поля
+        #region Fields
 
-        // Бизнес-логика: все операции с товарами
-        /// <summary>
-        /// SOLID - D: Зависимость от ProductLogic через RepositoryFactory для переключения между EF и Dapper
-        /// </summary>
-        private ProductLogic _logic;
+        private ProductPresenter? _presenter;
+        private IProductModel? _model;
 
-        // Основные элементы управления
-        private DataGridView dataGridView;
-        private Panel buttonPanel;
-        private Button btnRefresh;
-        private Button btnAdd;
-        private Button btnDelete;
-        private Button btnDeleteByQuantity;
+        // Основные элементы UI
+        private DataGridView dataGridView = null!;
+        private Panel buttonPanel = null!;
+        private Button btnRefresh = null!;
+        private Button btnAdd = null!;
+        private Button btnDelete = null!;
+        private Button btnDeleteByQuantity = null!;
 
         #endregion
 
-        #region Конструктор
+        #region IProductView Events
+
+        /// <inheritdoc/>
+        public event EventHandler? RefreshRequested;
+
+        /// <inheritdoc/>
+        public event EventHandler? AddProductRequested;
+
+        /// <inheritdoc/>
+        public event EventHandler<int>? DeleteProductRequested;
+
+        /// <inheritdoc/>
+        public event EventHandler<(int ProductId, int Quantity)>? DeleteProductByQuantityRequested;
+
+        #endregion
+
+        #region Constructor
 
         /// <summary>
-        /// Конструктор главной формы
+        /// Конструктор по умолчанию для MainForm.
+        /// Инициализирует компоненты UI. Презентер будет установлен позже через метод SetPresenter.
         /// </summary>
         public MainForm()
         {
             InitializeComponent();
-            
-            // Инициализация бизнес-логики после InitializeComponent
-            try
-            {
-                _logic = new ProductLogic(RepositoryFactory.CreateRepository());
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"Ошибка инициализации репозитория: {ex.Message}", 
-                    "Ошибка", 
-                    MessageBoxButtons.OK, 
-                    MessageBoxIcon.Error);
-                // SOLID - D: Fallback к in-memory репозиторию при ошибке БД
-                _logic = new ProductLogic(null);
-            }
-            
-            // Загрузка данных при запуске
-            RefreshGrid();
+        }
+
+        /// <summary>
+        /// Устанавливает презентер и модель для этого представления.
+        /// Этот метод должен быть вызван после создания для завершения связывания MVP.
+        /// </summary>
+        /// <param name="presenter">The presenter to handle view events</param>
+        /// <param name="model">The model for business operations</param>
+        public void SetPresenter(ProductPresenter presenter, IProductModel model)
+        {
+            _presenter = presenter ?? throw new ArgumentNullException(nameof(presenter));
+            _model = model ?? throw new ArgumentNullException(nameof(model));
         }
 
         #endregion
 
-        #region Инициализация компонентов
+        #region IProductView Implementation
+
+        /// <inheritdoc/>
+        public void ShowProducts(IEnumerable<Product> products)
+        {
+            try
+            {
+                dataGridView.DataSource = null;
+                dataGridView.DataSource = products.ToList();
+
+                // Настройка заголовков столбцов
+                if (dataGridView.Columns.Count > 0)
+                {
+                    if (dataGridView.Columns.Contains("Id"))
+                        dataGridView.Columns["Id"].HeaderText = "ID";
+                    
+                    if (dataGridView.Columns.Contains("Name"))
+                        dataGridView.Columns["Name"].HeaderText = "Название";
+                    
+                    if (dataGridView.Columns.Contains("Description"))
+                        dataGridView.Columns["Description"].HeaderText = "Описание";
+                    
+                    if (dataGridView.Columns.Contains("Price"))
+                    {
+                        dataGridView.Columns["Price"].HeaderText = "Цена";
+                        dataGridView.Columns["Price"].DefaultCellStyle.Format = "N2";
+                    }
+                    
+                    if (dataGridView.Columns.Contains("Category"))
+                        dataGridView.Columns["Category"].HeaderText = "Категория";
+                    
+                    if (dataGridView.Columns.Contains("StockQuantity"))
+                        dataGridView.Columns["StockQuantity"].HeaderText = "Количество";
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowError("Ошибка", $"Ошибка при обновлении таблицы: {ex.Message}");
+            }
+        }
+
+        /// <inheritdoc/>
+        public void ShowError(string title, string message)
+        {
+            MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        /// <inheritdoc/>
+        public void ShowMessage(string title, string message)
+        {
+            MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        public bool ShowConfirmation(string title, string message)
+        {
+            return MessageBox.Show(message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
+        }
+        public int? GetSelectedProductId()
+        {
+            if (dataGridView.CurrentRow == null)
+                return null;
+
+            if (!dataGridView.Columns.Contains("Id") || dataGridView.CurrentRow.Cells["Id"].Value == null)
+                return null;
+
+            return (int)dataGridView.CurrentRow.Cells["Id"].Value;
+        }
+
+        #endregion
+
+        #region Initialize Components
 
         /// <summary>
-        /// Инициализация всех компонентов формы
+        /// Инициализирует все компоненты формы.
         /// </summary>
         private void InitializeComponent()
         {
             this.SuspendLayout();
 
-            // Настройка формы 
+            // Настройки формы
             this.Text = "Продакт манагемент систем";
             this.ClientSize = new Size(800, 600);
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -79,7 +162,7 @@ namespace ProductManagementSystem.WinFormsApp
             this.MinimumSize = new Size(800, 600);
             this.MaximumSize = new Size(800, 600);
 
-            // кнопочки короче тут :)
+            // Панель кнопок
             buttonPanel = new Panel
             {
                 Dock = DockStyle.Bottom,
@@ -87,7 +170,7 @@ namespace ProductManagementSystem.WinFormsApp
                 Padding = new Padding(5)
             };
 
-            // Кнопка "Обновить"
+            // Кнопка обновления
             btnRefresh = new Button
             {
                 Text = "Обновить",
@@ -97,7 +180,7 @@ namespace ProductManagementSystem.WinFormsApp
             };
             btnRefresh.Click += BtnRefresh_Click;
 
-            // Кнопка "Добавить"
+            // Кнопка добавления
             btnAdd = new Button
             {
                 Text = "Добавить",
@@ -107,7 +190,7 @@ namespace ProductManagementSystem.WinFormsApp
             };
             btnAdd.Click += BtnAdd_Click;
 
-            // Кнопка "Удалить"
+            // Кнопка удаления
             btnDelete = new Button
             {
                 Text = "Удалить",
@@ -117,7 +200,7 @@ namespace ProductManagementSystem.WinFormsApp
             };
             btnDelete.Click += BtnDelete_Click;
 
-            // Кнопка "Удалить определенное количество"
+            // Кнопка удаления по количеству
             btnDeleteByQuantity = new Button
             {
                 Text = "Удалить количество",
@@ -127,13 +210,13 @@ namespace ProductManagementSystem.WinFormsApp
             };
             btnDeleteByQuantity.Click += BtnDeleteByQuantity_Click;
 
-            // Добавляем кнопки на панель
+            // Добавление кнопок на панель
             buttonPanel.Controls.Add(btnRefresh);
             buttonPanel.Controls.Add(btnAdd);
             buttonPanel.Controls.Add(btnDelete);
             buttonPanel.Controls.Add(btnDeleteByQuantity);
 
-            //  Создание DataGridView (заполняет оставшееся пространство)
+            // Создание DataGridView
             dataGridView = new DataGridView
             {
                 Dock = DockStyle.Fill,
@@ -150,7 +233,7 @@ namespace ProductManagementSystem.WinFormsApp
                 BorderStyle = BorderStyle.Fixed3D
             };
 
-            //  Добавление элементов на форму 
+            // Добавление элементов на форму
             this.Controls.Add(dataGridView);
             this.Controls.Add(buttonPanel);
 
@@ -159,137 +242,74 @@ namespace ProductManagementSystem.WinFormsApp
 
         #endregion
 
-        #region Обработчики событий кнопок
+        #region Button Event Handlers - Fire View Events
 
         /// <summary>
-        /// Обновление данных в таблице
+        /// Обрабатывает нажатие кнопки обновления - генерирует событие RefreshRequested.
         /// </summary>
-        private void BtnRefresh_Click(object sender, EventArgs e)
+        private void BtnRefresh_Click(object? sender, EventArgs e)
         {
-            try
-            {
-                RefreshGrid();
-                MessageBox.Show(
-                    "Данные успешно обновлены.", 
-                    "Обновление", 
-                    MessageBoxButtons.OK, 
-                    MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"Ошибка при обновлении данных: {ex.Message}", 
-                    "Ошибка", 
-                    MessageBoxButtons.OK, 
-                    MessageBoxIcon.Error);
-            }
+            RefreshRequested?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
-        /// Показать форму добавления товара
+        /// Обрабатывает нажатие кнопки добавления - показывает диалог AddProductForm.
+        /// MVP: представление генерирует событие AddProductRequested и обрабатывает диалог.
         /// </summary>
-        private void BtnAdd_Click(object sender, EventArgs e)
+        private void BtnAdd_Click(object? sender, EventArgs e)
         {
-            // SOLID - S: Отдельная форма AddProductForm отвечает за ui добавления товара
-            using (var addForm = new AddProductForm(_logic))
+            AddProductRequested?.Invoke(this, EventArgs.Empty);
+
+            if (_model == null)
             {
-                // ShowDialog делает форму модальной автоматически:
-                // - Блокирует взаимодействие с родительской формой
-                // - Форму можно перемещать
-                // - Возвращает DialogResult после закрытия
-                // Модальное окно блокирует родительскую форму
+                ShowError("Ошибка", "Модель не инициализирована.");
+                return;
+            }
+
+            // Показ диалога добавления товара (представление отвечает за показ диалога)
+            using (var addForm = new AddProductForm(_model))
+            {
                 if (addForm.ShowDialog(this) == DialogResult.OK)
                 {
-                    // Обновляем таблицу только если товар был успешно добавлен
-                    RefreshGrid();
+                    // Обновление обрабатывается событием ProductsChanged модели
                 }
             }
         }
 
         /// <summary>
-        /// Удаление выбранного товара
+        /// Обрабатывает нажатие кнопки удаления - генерирует событие DeleteProductRequested.
         /// </summary>
-        private void BtnDelete_Click(object sender, EventArgs e)
+        private void BtnDelete_Click(object? sender, EventArgs e)
         {
-            try
+            var productId = GetSelectedProductId();
+            if (productId == null)
             {
-                if (dataGridView.CurrentRow == null)
-                {
-                    MessageBox.Show(
-                        "Пожалуйста, выберите строку для удаления.", 
-                        "Предупреждение",
-                        MessageBoxButtons.OK, 
-                        MessageBoxIcon.Warning);
-                    return;
-                }
-
-                if (!dataGridView.Columns.Contains("Id") || 
-                    dataGridView.CurrentRow.Cells["Id"].Value == null)
-                {
-                    MessageBox.Show(
-                        "Не удалось определить ID товара.", 
-                        "Ошибка",
-                        MessageBoxButtons.OK, 
-                        MessageBoxIcon.Error);
-                    return;
-                }
-
-                int id = (int)dataGridView.CurrentRow.Cells["Id"].Value;
-
-                DialogResult result = MessageBox.Show(
-                    $"Вы уверены, что хотите удалить товар с ID {id}?",
-                    "Подтверждение удаления",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
-
-                if (result == DialogResult.Yes)
-                {
-                    bool deleted = _logic.DeleteProduct(id);
-                    if (deleted)
-                    {
-                        RefreshGrid();
-                        MessageBox.Show(
-                            "Товар успешно удалён.", 
-                            "Успех",
-                            MessageBoxButtons.OK, 
-                            MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        MessageBox.Show(
-                            "Не удалось удалить товар.", 
-                            "Ошибка",
-                            MessageBoxButtons.OK, 
-                            MessageBoxIcon.Error);
-                    }
-                }
+                ShowError("Предупреждение", "Пожалуйста, выберите строку для удаления.");
+                return;
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"Ошибка при удалении товара: {ex.Message}", 
-                    "Ошибка",
-                    MessageBoxButtons.OK, 
-                    MessageBoxIcon.Error);
-            }
+
+            DeleteProductRequested?.Invoke(this, productId.Value);
         }
 
         /// <summary>
-        /// Удаление товара с указанием количества
+        /// Обрабатывает нажатие кнопки удаления по количеству.
+        /// MVP: представление обрабатывает показ диалога выбора и генерирует событие DeleteProductByQuantityRequested.
         /// </summary>
-        private void BtnDeleteByQuantity_Click(object sender, EventArgs e)
+        private void BtnDeleteByQuantity_Click(object? sender, EventArgs e)
         {
+            if (_presenter == null)
+            {
+                ShowError("Ошибка", "Презентер не инициализирован.");
+                return;
+            }
+
             try
             {
-                var productsWithIndexes = _logic.GetProductsWithIndexes();
+                var productsWithIndexes = _presenter.GetProductsWithIndexes();
                 
                 if (productsWithIndexes.Count == 0)
                 {
-                    MessageBox.Show(
-                        "Товары не найдены.", 
-                        "Информация",
-                        MessageBoxButtons.OK, 
-                        MessageBoxIcon.Information);
+                    ShowMessage("Информация", "Товары не найдены.");
                     return;
                 }
 
@@ -316,7 +336,7 @@ namespace ProductManagementSystem.WinFormsApp
                         listBox.Items.Add($"{index}. {product.Name}, {product.StockQuantity} шт");
                     }
 
-                    // Поле для ввода количества
+                    // Поле ввода количества
                     var lblQuantity = new Label
                     {
                         Text = "Количество для удаления (0 - всё):",
@@ -357,56 +377,24 @@ namespace ProductManagementSystem.WinFormsApp
                         }
                     };
 
-                    // Обработчик кнопки ОК
+                    // Обработчик кнопки OK - генерирует событие для презентера
                     btnOk.Click += (s, args) =>
                     {
                         if (listBox.SelectedIndex < 0)
                         {
-                            MessageBox.Show(
-                                "Выберите товар для удаления.", 
-                                "Предупреждение",
-                                MessageBoxButtons.OK, 
-                                MessageBoxIcon.Warning);
+                            ShowError("Предупреждение", "Выберите товар для удаления.");
                             return;
                         }
 
                         var selectedProduct = productsWithIndexes[listBox.SelectedIndex].Product;
                         int quantityToRemove = (int)numQuantity.Value;
 
-                        if (quantityToRemove == 0)
-                            quantityToRemove = selectedProduct.StockQuantity;
-
-                        DialogResult confirmResult = MessageBox.Show(
-                            $"Вы хотите удалить {selectedProduct.Name} в количестве {quantityToRemove}, вы уверены?",
-                            "Подтверждение удаления",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Question);
-
-                        if (confirmResult == DialogResult.Yes)
-                        {
-                            bool success = _logic.RemoveQuantityFromProduct(selectedProduct.Id, quantityToRemove);
-                            if (success)
-                            {
-                                RefreshGrid();
-                                MessageBox.Show(
-                                    "Товар удален в указанном количестве.", 
-                                    "Успех",
-                                    MessageBoxButtons.OK, 
-                                    MessageBoxIcon.Information);
-                                selectForm.DialogResult = DialogResult.OK;
-                            }
-                            else
-                            {
-                                MessageBox.Show(
-                                    "Не удалось удалить товар.", 
-                                    "Ошибка",
-                                    MessageBoxButtons.OK, 
-                                    MessageBoxIcon.Error);
-                            }
-                        }
+                        // Генерация события для презентера
+                        DeleteProductByQuantityRequested?.Invoke(this, (selectedProduct.Id, quantityToRemove));
+                        selectForm.DialogResult = DialogResult.OK;
                     };
 
-                    // Обработчик кнопки Отмена
+                    // Обработчик кнопки отмены
                     btnCancel.Click += (s, args) =>
                     {
                         selectForm.DialogResult = DialogResult.Cancel;
@@ -423,62 +411,25 @@ namespace ProductManagementSystem.WinFormsApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"Ошибка при удалении товара: {ex.Message}", 
-                    "Ошибка",
-                    MessageBoxButtons.OK, 
-                    MessageBoxIcon.Error);
+                ShowError("Ошибка", $"Ошибка при удалении товара: {ex.Message}");
             }
         }
 
         #endregion
 
-        #region Работа с данными
+        #region Dispose
 
         /// <summary>
-        /// Обновление данных в таблице
+        /// Очистка используемых ресурсов.
         /// </summary>
-        private void RefreshGrid()
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
         {
-            try
+            if (disposing)
             {
-                dataGridView.DataSource = null;
-                var products = _logic.GetAllProducts();
-                dataGridView.DataSource = products;
-
-                // Настройка заголовков колонок
-                if (dataGridView.Columns.Count > 0)
-                {
-                    if (dataGridView.Columns.Contains("Id"))
-                        dataGridView.Columns["Id"].HeaderText = "ID";
-                    
-                    if (dataGridView.Columns.Contains("Name"))
-                        dataGridView.Columns["Name"].HeaderText = "Название";
-                    
-                    if (dataGridView.Columns.Contains("Description"))
-                        dataGridView.Columns["Description"].HeaderText = "Описание";
-                    
-                    if (dataGridView.Columns.Contains("Price"))
-                    {
-                        dataGridView.Columns["Price"].HeaderText = "Цена";
-                        dataGridView.Columns["Price"].DefaultCellStyle.Format = "N2";
-                    }
-                    
-                    if (dataGridView.Columns.Contains("Category"))
-                        dataGridView.Columns["Category"].HeaderText = "Категория";
-                    
-                    if (dataGridView.Columns.Contains("StockQuantity"))
-                        dataGridView.Columns["StockQuantity"].HeaderText = "Количество";
-                }
+                _presenter?.Dispose();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"Ошибка при обновлении таблицы: {ex.Message}", 
-                    "Ошибка",
-                    MessageBoxButtons.OK, 
-                    MessageBoxIcon.Error);
-            }
+            base.Dispose(disposing);
         }
 
         #endregion

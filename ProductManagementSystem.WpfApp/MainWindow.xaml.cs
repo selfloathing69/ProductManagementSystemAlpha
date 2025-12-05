@@ -18,7 +18,7 @@ namespace ProductManagementSystem.WpfApp
         /// Экземпляр класса с бизнес-логикой для работы с товарами.
         /// Для переключения между Entity Framework и Dapper, измените константу в RepositoryFactory.cs
         /// </summary>
-        private ProductLogic _logic = new ProductLogic(RepositoryFactory.CreateRepository());
+        private ProductLogic _logic = RepositoryFactory.CreateProductLogic();
 
         /// <summary>
         /// Инициализирует новый экземпляр главного окна.

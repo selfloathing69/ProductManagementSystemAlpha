@@ -61,5 +61,31 @@ namespace ProductManagementSystem.WpfApp
             // Ninject автоматически создаст нужную реализацию на основе настроек в SimpleConfigModule.
             return Kernel.Get<IRepository<Product>>();
         }
+
+        /// <summary>
+        /// Создаёт экземпляр ProductLogic через Ninject DI-контейнер.
+        /// 
+        /// НОВЫЙ МЕТОД! Теперь вместо создания ProductLogic вручную,
+        /// мы запрашиваем его у Ninject, который автоматически:
+        /// - Создаст IRepository<Product> (EntityRepository или DapperRepository)
+        /// - Создаст IBusinessFunctions (BusinessFunctions)
+        /// - Передаст их в конструктор ProductLogic
+        /// </summary>
+        /// <returns>Экземпляр ProductLogic с внедрёнными зависимостями</returns>
+        public static ProductLogic CreateProductLogic()
+        {
+            // Ninject автоматически создаст ProductLogic с нужными зависимостями
+            return Kernel.Get<ProductLogic>();
+        }
+
+        /// <summary>
+        /// Создаёт экземпляр ILogic через Ninject DI-контейнер.
+        /// Рекомендуемый способ для работы через интерфейс.
+        /// </summary>
+        /// <returns>Экземпляр ILogic</returns>
+        public static ILogic CreateLogic()
+        {
+            return Kernel.Get<ILogic>();
+        }
     }
 }

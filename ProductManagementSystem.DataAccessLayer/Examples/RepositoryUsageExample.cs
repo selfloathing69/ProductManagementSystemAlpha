@@ -22,8 +22,11 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
                 // Создание репозитория Entity Framework
                 IRepository<Model.Product> efRepository = new EntityRepository<Model.Product>();
                 
-                // Создание экземпляра ProductLogic с EF репозиторием
-                var productLogic = new ProductLogic(efRepository);
+                // Создание бизнес-функций
+                IBusinessFunctions businessFunctions = new BusinessFunctions();
+                
+                // Создание экземпляра ProductLogic с EF репозиторием и бизнес-функциями
+                var productLogic = new ProductLogic(efRepository, businessFunctions);
                 
                 Console.WriteLine("Репозиторий Entity Framework создан и готов к использованию.");
                 
@@ -39,11 +42,11 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
                 };
                 
                 Console.WriteLine("Добавление нового товара...");
-                productLogic.AddProduct(newProduct);
+                productLogic.Add(newProduct);
                 Console.WriteLine($"Товар добавлен с ID: {newProduct.Id}");
                 
                 // Получение всех товаров
-                var products = productLogic.GetAllProducts();
+                var products = productLogic.GetAll();
                 Console.WriteLine($"Всего товаров в базе: {products.Count}");
                 
                 Console.WriteLine("Entity Framework работает корректно!");
@@ -67,8 +70,11 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
                 // Создание репозитория Dapper
                 IRepository<Model.Product> dapperRepository = new DapperRepository<Model.Product>();
                 
+                // Создание бизнес-функций
+                IBusinessFunctions businessFunctions = new BusinessFunctions();
+                
                 // Создание экземпляра ProductLogic с Dapper репозиторием
-                var productLogic = new ProductLogic(dapperRepository);
+                var productLogic = new ProductLogic(dapperRepository, businessFunctions);
                 
                 Console.WriteLine("Репозиторий Dapper создан и готов к использованию.");
                 
@@ -84,11 +90,11 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
                 };
                 
                 Console.WriteLine("Добавление нового товара...");
-                productLogic.AddProduct(newProduct);
+                productLogic.Add(newProduct);
                 Console.WriteLine($"Товар добавлен с ID: {newProduct.Id}");
                 
                 // Получение всех товаров
-                var products = productLogic.GetAllProducts();
+                var products = productLogic.GetAll();
                 Console.WriteLine($"Всего товаров в базе: {products.Count}");
                 
                 Console.WriteLine("Dapper работает корректно!");
@@ -113,11 +119,12 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
             {
                 // Создание Dapper репозитория с пользовательской строкой подключения
                 var dapperRepository = new DapperRepository<Model.Product>(customConnectionString);
-                var productLogic = new ProductLogic(dapperRepository);
+                var businessFunctions = new BusinessFunctions();
+                var productLogic = new ProductLogic(dapperRepository, businessFunctions);
                 
                 Console.WriteLine("Репозиторий с пользовательской строкой подключения создан.");
                 
-                var products = productLogic.GetAllProducts();
+                var products = productLogic.GetAll();
                 Console.WriteLine($"Подключение успешно! Товаров в базе: {products.Count}");
             }
             catch (Exception ex)
@@ -136,7 +143,8 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
             try
             {
                 IRepository<Model.Product> repository = new EntityRepository<Model.Product>();
-                var productLogic = new ProductLogic(repository);
+                var businessFunctions = new BusinessFunctions();
+                var productLogic = new ProductLogic(repository, businessFunctions);
                 
                 // CREATE - Создание
                 Console.WriteLine("\n1. CREATE - Создание товара");
@@ -149,12 +157,12 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
                     Category = "Тест",
                     StockQuantity = 10
                 };
-                productLogic.AddProduct(product);
+                productLogic.Add(product);
                 Console.WriteLine($"Товар создан с ID: {product.Id}");
                 
                 // READ - Чтение
                 Console.WriteLine("\n2. READ - Чтение товара");
-                var readProduct = productLogic.GetProduct(product.Id);
+                var readProduct = productLogic.GetById(product.Id);
                 if (readProduct != null)
                 {
                     Console.WriteLine($"Товар найден: {readProduct.Name}, Цена: {readProduct.Price}");
@@ -166,13 +174,13 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
                 {
                     readProduct.Price = 1299;
                     readProduct.StockQuantity = 15;
-                    productLogic.UpdateProduct(readProduct);
+                    productLogic.Update(readProduct);
                     Console.WriteLine($"Товар обновлён: новая цена {readProduct.Price}, количество {readProduct.StockQuantity}");
                 }
                 
                 // DELETE - Удаление
                 Console.WriteLine("\n4. DELETE - Удаление товара");
-                if (productLogic.DeleteProduct(product.Id))
+                if (productLogic.Delete(product.Id))
                 {
                     Console.WriteLine("Товар успешно удалён");
                 }
