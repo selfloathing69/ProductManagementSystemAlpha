@@ -14,13 +14,6 @@ DataAccessLayer/
     └── DapperRepository<T>  - Реализация через Dapper
 ```
 
-## Настройка подключения к базе данных
-
-Строка подключения по умолчанию:
-```
-Server=AspireNotebook\\SQLEXPRESS;Database=ProductManagementDB;Integrated Security=True;TrustServerCertificate=True;
-```
-
 ## Использование Entity Framework Repository
 
 ```csharp
