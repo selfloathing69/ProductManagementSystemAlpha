@@ -113,7 +113,7 @@ namespace ProductManagementSystem.DataAccessLayer.Examples
         {
             Console.WriteLine("\n Пример с пользовательской строкой подключения ");
             
-            var customConnectionString = "Server=AspireNotebook\\SQLEXPRESS;Database=ProductManagementDB;Integrated Security=True;TrustServerCertificate=True;";
+            var customConnectionString = "Server=MyServer\\SQLEXPRESS;Database=ProductManagementDB;Integrated Security=True;TrustServerCertificate=True;";
             
             try
             {
