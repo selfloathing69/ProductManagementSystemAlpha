@@ -1,15 +1,25 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
+    <LangVersion>12.0</LangVersion>
   </PropertyGroup>
+
   <ItemGroup>
+    <ProjectReference Include="..\ProductManagementSystem.Model\ProductManagementSystem.Model.csproj" />
     <ProjectReference Include="..\ProductManagementSystem.Logic\ProductManagementSystem.Logic.csproj" />
     <ProjectReference Include="..\ProductManagementSystem.DataAccessLayer\ProductManagementSystem.DataAccessLayer.csproj" />
+    <ProjectReference Include="..\ProductManagementSystem.Shared\ProductManagementSystem.Shared.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Ninject" Version="3.3.6" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Page Include="App.xaml" />
+  </ItemGroup>
+
 </Project>
