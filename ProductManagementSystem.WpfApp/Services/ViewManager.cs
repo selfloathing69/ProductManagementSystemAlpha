@@ -8,21 +8,29 @@ namespace ProductManagementSystem.WpfApp.Services
     /// <summary>
     /// MVVM Pattern - ViewModelFirst подход.
     /// 
-    /// SOLID - S: Класс отвечает только за создание и отображение окон на основе ViewModel.
-    /// SOLID - D: Зависит от абстракций ViewModelBase, а не от конкретных реализаций.
+    /// SOLID - S: Класс отвечает только за создание и управление окнами на основе ViewModel.
+    /// SOLID - D: Зависит от абстракции ViewModelBase, а не от конкретных реализаций.
     /// 
-    /// ViewManager управляет жизненным циклом окон приложения.
-    /// Реализует паттерн ViewModelFirst: сначала создается ViewModel, затем View привязывается к нему.
+    /// ViewManager реализует паттерн создания окон приложения.
+    /// Реализует подход ViewModelFirst: сначала создается ViewModel, затем View привязывается к ней.
     /// 
-    /// Преимущества ViewModelFirst:
+    /// самое главное зачем он нам ViewModelFirst:
     /// - ViewModel не зависит от View
-    /// - Упрощается тестирование
+    /// - Упрощенное тестирование бизнес-логики
     /// - Централизованное управление окнами
+    /// - Возможность смены View без изменения ViewModel
+    /// 
+    /// Алгоритм работы ViewModelFirst:
+    /// 1. Создается ViewModel (через ди контейнер)
+    /// 2. ViewManager создает соответствующее окно View
+    /// 3. View.DataContext = ViewModel (связывание)
+    /// 4) Окно отображается пользователю
     /// </summary>
     public class ViewManager
     {
         /// <summary>
         /// Отображает главное окно приложения с указанной ViewModel.
+        /// ViewModelFirst: ViewModel создается ДО View.
         /// </summary>
         /// <param name="viewModel">ViewModel для главного окна</param>
         public void ShowMainWindow(MainViewModel viewModel)
@@ -30,27 +38,42 @@ namespace ProductManagementSystem.WpfApp.Services
             if (viewModel == null)
                 throw new ArgumentNullException(nameof(viewModel));
 
-            var mainWindow = new MainWindow
-            {
-                DataContext = viewModel
-            };
+            // ViewModelFirst паттерн???:
+            // 1. ViewModel уже создана (передана в параметре)
+            // 2. Создаем View и передаем ViewModel в конструктор
+            // 3. View автоматически устанавливает DataContext
 
+            var mainWindow = new MainWindow(viewModel);
+
+            // 4. Показываем окно пользователю
             mainWindow.Show();
         }
 
         /// <summary>
-        /// Отображает диалоговое окно с указанной ViewModel.
+        /// Отображает модальное окно с указанной ViewModel.
         /// </summary>
-        /// <param name="viewModel">ViewModel для диалогового окна</param>
-        /// <returns>Результат диалогового окна (true/false/null)</returns>
+        /// <param name="viewModel">ViewModel для модального окна</param>
+        /// <returns>Результат закрытия окна (true/false/null)</returns>
         public bool? ShowDialog(ViewModelBase viewModel)
         {
             if (viewModel == null)
                 throw new ArgumentNullException(nameof(viewModel));
 
-            // В будущем можно добавить сопоставление типов ViewModel к типам View
-            // Пока возвращаем null для демонстрации паттерна
-            return null;
+            // Определяем тип ViewModel и создаем соответствующую View
+            Window? dialog = viewModel switch
+            {
+                ConfirmationViewModel confirmationVm => new ConfirmationDialog(confirmationVm),
+                _ => null
+            };
+
+            if (dialog == null)
+                return null;
+
+            // Устанавливаем владельца окна
+            dialog.Owner = Application.Current.MainWindow;
+
+            // Показываем модальное окно
+            return dialog.ShowDialog();
         }
 
         /// <summary>
@@ -65,7 +88,7 @@ namespace ProductManagementSystem.WpfApp.Services
         }
 
         /// <summary>
-        /// Отображает модальное диалоговое окно сообщения.
+        /// Отображает стандартное модальное окно сообщения.
         /// </summary>
         /// <param name="message">Текст сообщения</param>
         /// <param name="title">Заголовок окна</param>

@@ -27,7 +27,7 @@ namespace ProductManagementSystem.Presenter
         /// </summary>
         public override void Load()
         {
-            // ===================== Дата аксес лейер 
+            // ================ Дата аксес лейер 
             
             // CRUD операции - Repository
             // ПЕРЕКЛЮЧАЛКА!! Раскомментируйте нужный репозиторий

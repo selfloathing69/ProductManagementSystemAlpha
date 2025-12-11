@@ -44,12 +44,10 @@ namespace ProductManagementSystem.WinFormsApp
                 {
                     if (args.ProductId == -1)
                     {
-                        // Signal to show dialog first
                         var productsWithIndexes = presenter.GetProductsWithIndexes();
                         var result = view.ShowDeleteByQuantityDialog(productsWithIndexes);
                         if (result.HasValue)
                         {
-                            // Fire the real delete event
                             OnDeleteByQuantityConfirmed(presenter, view, result.Value);
                         }
                     }

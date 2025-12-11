@@ -6,6 +6,10 @@
     <Nullable>enable</Nullable>
     <LangVersion>12.0</LangVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="THEME_SYSTEM_DOCUMENTATION.md" />
+    <None Remove="WPF_UPDATE_SUMMARY.md" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ProductManagementSystem.Model\ProductManagementSystem.Model.csproj" />

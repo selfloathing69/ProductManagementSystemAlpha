@@ -33,24 +33,6 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        /// <summary>
-        /// ”станавливает новое значение свойства и вызывает уведомление об изменении.
-        /// 
-        /// “ипичное использование в свойстве:
-        /// <code>
-        /// private string _name;
-        /// public string Name
-        /// {
-        ///     get => _name;
-        ///     set => SetProperty(ref _name, value);
-        /// }
-        /// </code>
-        /// </summary>
-        /// <typeparam name="T">“ип свойства</typeparam>
-        /// <param name="field">—сылка на поле, хран€щее значение</param>
-        /// <param name="value">Ќовое значение</param>
-        /// <param name="propertyName">»м€ свойства (заполн€етс€ автоматически)</param>
-        /// <returns>true, если значение изменилось; иначе false</returns>
         protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
         {
             // ѕровер€ем, действительно ли значение изменилось

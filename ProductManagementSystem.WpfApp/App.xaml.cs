@@ -11,14 +11,30 @@ using ProductManagementSystem.WpfApp.ViewModels;
 namespace ProductManagementSystem.WpfApp
 {
     /// <summary>
-    /// MVVM Pattern - Composition Root.
+    /// MVVM Pattern - Composition Root (Корень композиции).
     /// 
     /// SOLID - S: Класс отвечает только за инициализацию приложения и настройку DI.
     /// SOLID - D: Использует Dependency Injection для управления зависимостями.
     /// 
     /// App является точкой входа WPF приложения.
-    /// Реализует ViewModelFirst подход: сначала создается ViewModel, затем View.
-    /// Настраивает DI контейнер (Ninject) для автоматического разрешения зависимостей.
+    /// Реализует ViewModelFirst вот та вот:
+    /// 
+    /// 1. Настраиваем DI контейнер (Ninject)
+    ///    - Регистрируем Repository, BusinessLogic, ViewModel
+    /// 
+    /// 2. Создаем ViewManager для управления окнами
+    ///    - ViewManager знает как создавать View для ViewModel
+    /// 
+    /// 3. Создаем MainViewModel через DI
+    ///    - Ninject автоматически разрешает все зависимости
+    ///    - ViewModel не знает о существовании View
+    /// 
+    /// 4. Передаем ViewModel в ViewManager
+    ///    - ViewManager создает MainWindow
+    ///    - Устанавливает DataContext = ViewModel
+    ///    - Показывает окно пользователю
+    /// 
+    /// КЛЮЧЕВАЯ ОСОБЕННОСТЬ: ViewModel создается РАНЬШЕ View!!!!!!
     /// </summary>
     public partial class App : Application
     {
@@ -28,11 +44,21 @@ namespace ProductManagementSystem.WpfApp
         /// Переопределяет метод запуска приложения.
         /// Вызывается при старте приложения вместо использования StartupUri в XAML.
         /// 
-        /// ViewModelFirst подход:
-        /// 1. Настраиваем DI контейнер (Ninject)
-        /// 2. Создаем MainViewModel через DI
-        /// 3. Создаем MainWindow и устанавливаем DataContext
-        /// 4. Показываем окно
+        /// ViewModelFirst ==========================================
+        /// 
+        /// Шаг 1: Настраиваем DI контейнер (Ninject). Регистрируем зависимости: Repository → Logic → ViewModel
+
+        /// Шаг 2: Создаем ViewManager (управление окнами)  Отвечает за создание View по ViewModel
+
+        /// 
+        /// Шаг 3: Создаем MainViewModel через DI. - ViewModel создается ПЕРВОЙ (ViewModelFirst!) 
+
+        /// Ninject внедряет ILogic, IBusinessFunctions и т.д.
+        /// 
+        /// Шаг 4: ViewManager показывает MainWindow с ViewModel
+        ///ViewManager создает MainWindow
+        ///MainWindow.DataContext = MainViewModel
+        ///Все Binding в XAML автоматически работают
         /// </summary>
         /// <param name="e">Аргументы события запуска</param>
         protected override void OnStartup(StartupEventArgs e)
@@ -41,24 +67,45 @@ namespace ProductManagementSystem.WpfApp
 
             try
             {
-                // Шаг 1: Настройка Dependency Injection контейнера
+
+                // ШАГ 0: Инициализация ThemeManager
+
+                ThemeManager.Instance.Initialize();
+
+                // ШАГ 1: Настройка Dependency Injection контейнера
                 ConfigureDependencyInjection();
 
-                // Шаг 2: Создание ViewManager для управления окнами
+                // ШАГ 2: Создание ViewManager для управления окнами
+                // ViewManager реализует ViewModelFirst подход:
+                // - Получает ViewModel
+                // - Создает соответствующую View
+                // - Связывает их через DataContext
                 var viewManager = new ViewManager();
 
-                // Шаг 3: Создание MainViewModel через DI
-                // Ninject автоматически разрешит все зависимости (ILogic, IRepository и т.д.)
+                // ШАГ 3: Создание MainViewModel через DI (ViewModelFirst!)
+                // ВАЖНО: ViewModel создается РАНЬШЕ View!
+                // Ninject автоматически разрешит все зависимости:
+                // - ILogic → ProductLogic
+                // - IRepository<Product> → EntityRepository<Product>
+                // - IBusinessFunctions → BusinessFunctions
                 var mainViewModel = _kernel!.Get<MainViewModel>();
 
-                // Шаг 4: ViewModelFirst - показываем главное окно с ViewModel
+                // ШАГ 4: ViewManager создает и показывает главное окно
+                // ViewManager:
+                // 1. Создает MainWindow (View)
+                // 2. Устанавливает MainWindow.DataContext = mainViewModel
+                // 3. Показывает окно: mainWindow.Show()
+                //
+                // Теперь все Binding в MainWindow.xaml работают:
+                // - {Binding Products} → mainViewModel.Products
+                // - {Binding RefreshCommand} → mainViewModel.RefreshCommand
                 viewManager.ShowMainWindow(mainViewModel);
             }
             catch (Exception ex)
             {
-                // Обработка критических ошибок при запуске
+                // Обработка ошибок при запуске
                 MessageBox.Show(
-                    $"Критическая ошибка при запуске приложения:\n{ex.Message}\n\nПриложение будет закрыто.",
+                    $"Ошибка инициализации приложения:\n{ex.Message}\n\nПриложение будет закрыто",
                     "Ошибка запуска",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -75,26 +122,41 @@ namespace ProductManagementSystem.WpfApp
         /// 
         /// Ninject автоматически создаст и внедрит зависимости при запросе типа.
         /// Например, при создании MainViewModel он автоматически создаст:
-        /// - ILogic -> ProductLogic
-        /// - IRepository<Product> -> EntityRepository<Product> (или DapperRepository)
-        /// - IBusinessFunctions -> BusinessFunctions
+        /// - ILogic → ProductLogic
+        /// - IRepository<Product> → EntityRepository<Product> (или DapperRepository)
+        /// - IBusinessFunctions → BusinessFunctions
+        /// 
+        /// Кто от кого зависит:
+        /// ==================
+        /// MainViewModel ->
+        ///  требует ILogic
+        /// ProductLogic ->
+        /// требует IRepository<Product> + IBusinessFunctions
+        /// EntityRepository<Product> + BusinessFunctions
         /// </summary>
         private void ConfigureDependencyInjection()
         {
             _kernel = new StandardKernel();
 
-            // Регистрация репозитория данных
-            // ПЕРЕКЛЮЧАТЕЛЬ: Раскомментируйте нужный репозиторий
+            // 
+            // Регистрация репозитория данных (Data Access Layer)
+            // 
+            // ПЕРЕКЛЮЧАТЕЛЬ: Выберите нужную реализацию
             _kernel.Bind<IRepository<Product>>().To<EntityRepository<Product>>().InSingletonScope();
             // _kernel.Bind<IRepository<Product>>().To<DapperRepository<Product>>().InSingletonScope();
 
-            // Регистрация бизнес-функций
+            // 
+            // Регистрация бизнес-функций (Business Logic)
+            // 
             _kernel.Bind<IBusinessFunctions>().To<BusinessFunctions>().InSingletonScope();
 
-            // Регистрация основной бизнес-логики
+            // 
+            // Регистрация основной бизнес-логики (Facade Pattern)
             _kernel.Bind<ILogic>().To<ProductLogic>().InSingletonScope();
 
-            // Регистрация ViewModel
+            // Регистрация ViewModel (MVVM Pattern)
+            // InTransientScope() - каждый раз создается новый экземпляр
+            // (для окон, которые могут открываться несколько раз)
             _kernel.Bind<MainViewModel>().ToSelf().InTransientScope();
         }
 
