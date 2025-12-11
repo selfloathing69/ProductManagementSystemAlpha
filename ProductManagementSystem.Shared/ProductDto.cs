@@ -10,7 +10,7 @@ namespace ProductManagementSystem.Shared
     /// MVVM Pattern: DTO реализует INotifyPropertyChanged для двусторонней привязки данных.
     /// View автоматически обновляется при изменении свойств DTO в ViewModel.
     /// </summary>
-    public class ProductDto : INotifyPropertyChanged
+    public class ProductDto : INotifyPropertyChanged // =============== DTO дата трасфер обджект
     {
         private int _id;
         private string _name = string.Empty;

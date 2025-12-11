@@ -8,9 +8,8 @@ namespace ProductManagementSystem.Presenter
     /// <summary>
     /// MVP Pattern - Presenter Application (Автозапускаемый элемент).
     /// 
-    /// ВАЖНО: Это главная точка входа для MVP-архитектуры.
+    ///  главная точка входа для MVP-архитектуры.
     /// Presenter связывает пассивную View (WinFormsApp) и активную Model (IProductModel),
-    /// обеспечивая 100% выполнение паттерна MVP.
     /// 
     /// SOLID - S: Класс отвечает только за инициализацию и запуск приложения.
     /// SOLID - D: Используем DI-контейнер для управления зависимостями.
@@ -38,12 +37,12 @@ namespace ProductManagementSystem.Presenter
                 // MVP: Точка сборки (CompositionRoot) находится в Presenter
                 using var kernel = new StandardKernel(new CompositionRoot());
                 
-                Console.WriteLine("Получение что там в Model (IProductModel)...");
+                Console.WriteLine("Смотрю что там в Model (IProductModel)...");
                 
                 // Получаем Model через DI (все зависимости разрешаются автоматически)
                 var model = kernel.Get<IProductModel>();
                 
-                Console.WriteLine("Model успешно создан и настроен");
+                Console.WriteLine("Model посмотрела");
                 Console.WriteLine("Запуск View (WinFormsApp)");
                 Console.WriteLine();
                 
@@ -60,7 +59,7 @@ namespace ProductManagementSystem.Presenter
             {
                 Console.WriteLine("Ошибка!");
                 Console.WriteLine(ex.StackTrace);
-                Console.WriteLine("Нажмите любую клавишу для выхода...");
+                Console.WriteLine("нажмите любую клавишу для выхода...");
                 Console.ReadKey();
             }
         }

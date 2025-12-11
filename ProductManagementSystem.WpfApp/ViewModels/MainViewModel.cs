@@ -7,45 +7,47 @@ using ProductManagementSystem.Logic;
 using ProductManagementSystem.Model;
 using ProductManagementSystem.Shared;
 using ProductManagementSystem.WpfApp.Commands;
+using ProductManagementSystem.WpfApp.Services;
+using ProductManagementSystem.WpfApp.Views;
 
 namespace ProductManagementSystem.WpfApp.ViewModels
 {
     /// <summary>
     /// MVVM Pattern - Главная ViewModel для управления товарами.
     /// 
-    /// SOLID - S: Класс отвечает только за логику представления главного окна.
-    /// SOLID - D: Зависит от абстракции ILogic, а не от конкретной реализации.
+    /// SOLID - S: Класс отвечает только за представление главного окна.
+    /// SOLID - D: Зависит от абстракций ILogic, а не от конкретной реализации.
     /// 
-    /// MainViewModel координирует взаимодействие между View (MainWindow) и Model (ProductLogic).
-    /// Содержит коллекции данных, команды для UI элементов и бизнес-логику представления.
+    /// MainViewModel обеспечивает взаимодействие между View (MainWindow) и Model (ProductLogic).
+    /// Содержит состояние данных, команды для UI элементов и бизнес-логику представления.
     /// </summary>
-    public class MainViewModel : ViewModelBase
+    public class MainViewModel : ViewModelBase // === наследует
     {
-        #region Поля
 
         private readonly ILogic _logic;
+        private readonly ViewManager _viewManager;
         private ObservableCollection<ProductDto> _products;
         private ObservableCollection<string> _categories;
         private ProductDto? _selectedProduct;
         private string _selectedCategory = "Все категории";
         private decimal _totalInventoryValue;
+        private decimal _selectedProductValue;
         private string _statusMessage = "Готово";
 
         // Поля для добавления/редактирования товара
-        private int _productId;
+        private int? _productId;
         private string _productName = string.Empty;
         private string _productDescription = string.Empty;
-        private decimal _productPrice;
+        private decimal? _productPrice;
         private string _productCategory = string.Empty;
-        private int _productStockQuantity;
+        private int? _productStockQuantity;
 
-        #endregion
-
-        #region Свойства для привязки к UI
+        // Поля для хранения оригинальных значений (для сравнения при Update)
+        private ProductDto? _originalProduct;
 
         /// <summary>
-        /// Коллекция товаров для отображения в DataGrid.
-        /// ObservableCollection автоматически уведомляет UI об изменениях.
+        /// Коллекция товаров для отображения
+        /// ObservableCollection автоматически обновляет UI при изменениях.
         /// </summary>
         public ObservableCollection<ProductDto> Products
         {
@@ -63,17 +65,26 @@ namespace ProductManagementSystem.WpfApp.ViewModels
         }
 
         /// <summary>
-        /// Выбранный товар в DataGrid.
+        /// Выбранный това
         /// </summary>
         public ProductDto? SelectedProduct
         {
             get => _selectedProduct;
             set
             {
-                if (SetProperty(ref _selectedProduct, value) && value != null)
+                if (SetProperty(ref _selectedProduct, value))
                 {
-                    // При выборе товара заполняем поля для редактирования
-                    LoadProductForEdit(value);
+                    if (value != null)
+                    {
+                        // При выборе товара загружаем его для редактирования
+                        LoadProductForEdit(value);
+                        // Автоматически рассчитываем стоимость выбранного товара
+                        CalculateSelectedProductValue();
+                    }
+                    else
+                    {
+                        SelectedProductValue = 0;
+                    }
                 }
             }
         }
@@ -97,6 +108,15 @@ namespace ProductManagementSystem.WpfApp.ViewModels
         }
 
         /// <summary>
+        /// Стоимость выбранного товара (Price * StockQuantity).
+        /// </summary>
+        public decimal SelectedProductValue
+        {
+            get => _selectedProductValue;
+            set => SetProperty(ref _selectedProductValue, value);
+        }
+
+        /// <summary>
         /// Сообщение статуса для отображения в строке состояния.
         /// </summary>
         public string StatusMessage
@@ -105,9 +125,8 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             set => SetProperty(ref _statusMessage, value);
         }
 
-        #region Свойства для формы добавления/редактирования
 
-        public int ProductId
+        public int? ProductId
         {
             get => _productId;
             set => SetProperty(ref _productId, value);
@@ -125,7 +144,7 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             set => SetProperty(ref _productDescription, value);
         }
 
-        public decimal ProductPrice
+        public decimal? ProductPrice
         {
             get => _productPrice;
             set => SetProperty(ref _productPrice, value);
@@ -137,20 +156,14 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             set => SetProperty(ref _productCategory, value);
         }
 
-        public int ProductStockQuantity
+        public int? ProductStockQuantity
         {
             get => _productStockQuantity;
             set => SetProperty(ref _productStockQuantity, value);
         }
 
-        #endregion
-
-        #endregion
-
-        #region Команды
-
         /// <summary>
-        /// Команда обновления списка товаров.
+        /// Команды главного окна =====================
         /// </summary>
         public ICommand RefreshCommand { get; }
 
@@ -179,18 +192,23 @@ namespace ProductManagementSystem.WpfApp.ViewModels
         /// </summary>
         public ICommand ClearFormCommand { get; }
 
-        #endregion
+        /// <summary>
+        /// Команда сохранения изменений товара
+        /// </summary>
+        public ICommand UpdateProductCommand { get; }
 
-        #region Конструктор
+
 
         /// <summary>
         /// Инициализирует новый экземпляр MainViewModel.
         /// SOLID - D: Dependency Injection - получаем ILogic через конструктор.
         /// </summary>
-        /// <param name="logic">Экземпляр бизнес-логики</param>
-        public MainViewModel(ILogic logic)
+        /// <param name="logic">Сервис бизнес-логики</param>
+        /// <param name="viewManager">Менеджер для управления окнами</param>
+        public MainViewModel(ILogic logic, ViewManager viewManager)
         {
             _logic = logic ?? throw new ArgumentNullException(nameof(logic));
+            _viewManager = viewManager ?? throw new ArgumentNullException(nameof(viewManager));
             _products = new ObservableCollection<ProductDto>();
             _categories = new ObservableCollection<string>();
 
@@ -201,14 +219,13 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             ApplyFilterCommand = new RelayCommand(_ => ApplyFilter());
             CalculateTotalCommand = new RelayCommand(_ => CalculateTotal());
             ClearFormCommand = new RelayCommand(_ => ClearForm());
+            UpdateProductCommand = new RelayCommand(_ => UpdateProduct(), _ => CanUpdateProduct());
 
             // Загрузка начальных данных
             LoadInitialData();
         }
 
-        #endregion
 
-        #region Методы загрузки данных
 
         /// <summary>
         /// Загружает начальные данные при запуске приложения.
@@ -217,11 +234,12 @@ namespace ProductManagementSystem.WpfApp.ViewModels
         {
             RefreshProducts();
             LoadCategories();
+            CalculateTotal();
             StatusMessage = "Данные загружены";
         }
 
         /// <summary>
-        /// Обновляет список товаров из модели.
+        /// Обновляет список товаров из базы.
         /// </summary>
         private void RefreshProducts()
         {
@@ -235,11 +253,13 @@ namespace ProductManagementSystem.WpfApp.ViewModels
                     Products.Add(MapToDto(product));
                 }
 
-                StatusMessage = $"Загружено товаров: {Products.Count}";
+                LoadCategories();
+                CalculateTotal();
+                StatusMessage = $"Обновлено товаров: {Products.Count}";
             }
             catch (Exception ex)
             {
-                ShowError("Ошибка загрузки", $"Не удалось загрузить товары: {ex.Message}");
+                ShowError("Ошибка обновления", $"Не удалось обновить данные: {ex.Message}");
             }
         }
 
@@ -264,10 +284,6 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             }
         }
 
-        #endregion
-
-        #region Методы команд
-
         /// <summary>
         /// Добавляет новый товар в систему.
         /// </summary>
@@ -288,21 +304,27 @@ namespace ProductManagementSystem.WpfApp.ViewModels
                     return;
                 }
 
+                if (!ProductPrice.HasValue || ProductPrice.Value <= 0)
+                {
+                    ShowError("Ошибка валидации", "Цена должна быть больше нуля!");
+                    return;
+                }
+
                 // Создание товара
                 var product = new Product
                 {
-                    Id = ProductId,
+                    Id = ProductId ?? 0,
                     Name = ProductName.Trim(),
                     Description = ProductDescription.Trim(),
-                    Price = ProductPrice,
+                    Price = ProductPrice.Value,
                     Category = ProductCategory.Trim(),
-                    StockQuantity = ProductStockQuantity
+                    StockQuantity = ProductStockQuantity ?? 0
                 };
 
                 // Проверка существования ID
-                if (ProductId > 0)
+                if (ProductId.HasValue && ProductId.Value > 0)
                 {
-                    var existing = _logic.GetById(ProductId);
+                    var existing = _logic.GetById(ProductId.Value);
                     if (existing != null)
                     {
                         var result = MessageBox.Show(
@@ -321,7 +343,6 @@ namespace ProductManagementSystem.WpfApp.ViewModels
                 _logic.Add(product);
                 ClearForm();
                 RefreshProducts();
-                LoadCategories();
                 StatusMessage = "Товар успешно добавлен";
             }
             catch (Exception ex)
@@ -337,7 +358,119 @@ namespace ProductManagementSystem.WpfApp.ViewModels
         {
             return !string.IsNullOrWhiteSpace(ProductName) &&
                    !string.IsNullOrWhiteSpace(ProductCategory) &&
-                   ProductPrice > 0;
+                   ProductPrice.HasValue &&
+                   ProductPrice.Value > 0;
+        }
+
+        /// <summary>
+        /// Обновляет существующий товар
+        /// </summary>
+        private void UpdateProduct()
+        {
+            try
+            {
+                if (!ProductId.HasValue || ProductId.Value <= 0)
+                {
+                    ShowError("Ошибка", "Не выбран товар для редактирования");
+                    return;
+                }
+
+                // Валидация
+                if (string.IsNullOrWhiteSpace(ProductName))
+                {
+                    ShowError("Ошибка валидации", "Название товара обязательно для заполнения!");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(ProductCategory))
+                {
+                    ShowError("Ошибка валидации", "Категория товара обязательна для заполнения!");
+                    return;
+                }
+
+                if (!ProductPrice.HasValue || ProductPrice.Value <= 0)
+                {
+                    ShowError("Ошибка валидации", "Цена должна быть больше нуля!");
+                    return;
+                }
+
+                // Проверяем, есть ли изменения
+                if (_originalProduct == null)
+                {
+                    ShowError("Ошибка", "Не найдены оригинальные данные товара");
+                    return;
+                }
+
+                // Формируем текст изменений
+                var changesText = ConfirmationViewModel.BuildChangesText(
+                    _originalProduct.Name, ProductName.Trim(),
+                    _originalProduct.Description, ProductDescription.Trim(),
+                    _originalProduct.Price, ProductPrice.Value,
+                    _originalProduct.Category, ProductCategory.Trim(),
+                    _originalProduct.StockQuantity, ProductStockQuantity ?? 0
+                );
+
+                if (changesText == "Нет изменений")
+                {
+                    ShowError("Информация", "Вы не внесли никаких изменений");
+                    return;
+                }
+
+                // Создаем ViewModel для диалога подтверждения
+                var confirmationViewModel = new ConfirmationViewModel
+                {
+                    ProductId = ProductId.Value,
+                    ProductName = _originalProduct.Name,
+                    ChangesText = changesText
+                };
+
+                // Создаем и показываем диалог
+                var dialog = new ConfirmationDialog(confirmationViewModel);
+                dialog.Owner = Application.Current.MainWindow;
+                var result = dialog.ShowDialog();
+
+                // Если пользователь подтвердил изменения
+                if (result == true)
+                {
+                    var product = new Product
+                    {
+                        Id = ProductId.Value,
+                        Name = ProductName.Trim(),
+                        Description = ProductDescription.Trim(),
+                        Price = ProductPrice.Value,
+                        Category = ProductCategory.Trim(),
+                        StockQuantity = ProductStockQuantity ?? 0
+                    };
+
+                    if (_logic.Update(product))
+                    {
+                        RefreshProducts();
+                        ClearForm();
+                        StatusMessage = "Товар успешно обновлен";
+                    }
+                    else
+                    {
+                        ShowError("Ошибка", "Не удалось обновить товар");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowError("Ошибка", $"Не удалось обновить товар: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Проверяет возможность обновления товара
+        /// </summary>
+        private bool CanUpdateProduct()
+        {
+            return ProductId.HasValue && 
+                   ProductId.Value > 0 &&
+                   !string.IsNullOrWhiteSpace(ProductName) &&
+                   !string.IsNullOrWhiteSpace(ProductCategory) &&
+                   ProductPrice.HasValue &&
+                   ProductPrice.Value > 0;
         }
 
         /// <summary>
@@ -363,9 +496,8 @@ namespace ProductManagementSystem.WpfApp.ViewModels
                 {
                     _logic.Delete(SelectedProduct.Id);
                     RefreshProducts();
-                    LoadCategories();
                     ClearForm();
-                    StatusMessage = "Товар успешно удалён";
+                    StatusMessage = "Товар успешно удален";
                 }
                 catch (Exception ex)
                 {
@@ -392,7 +524,7 @@ namespace ProductManagementSystem.WpfApp.ViewModels
                 if (SelectedCategory == "Все категории")
                 {
                     RefreshProducts();
-                    StatusMessage = "Показаны все товары";
+                    StatusMessage = "Отображены все товары";
                 }
                 else
                 {
@@ -404,7 +536,7 @@ namespace ProductManagementSystem.WpfApp.ViewModels
                         Products.Add(MapToDto(product));
                     }
 
-                    StatusMessage = $"Показаны товары категории '{SelectedCategory}' ({Products.Count} шт.)";
+                    StatusMessage = $"Товаров категории '{SelectedCategory}' ({Products.Count} шт.)";
                 }
             }
             catch (Exception ex)
@@ -421,7 +553,7 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             try
             {
                 TotalInventoryValue = _logic.CalculateTotalInventoryValue();
-                StatusMessage = $"Общая стоимость склада: {TotalInventoryValue:C}";
+                StatusMessage = $"Общая стоимость склада рассчитана";
             }
             catch (Exception ex)
             {
@@ -430,28 +562,50 @@ namespace ProductManagementSystem.WpfApp.ViewModels
         }
 
         /// <summary>
+        /// Автоматически рассчитывает стоимость выбранного товара.
+        /// </summary>
+        private void CalculateSelectedProductValue()
+        {
+            if (SelectedProduct != null)
+            {
+                SelectedProductValue = SelectedProduct.Price * SelectedProduct.StockQuantity;
+                StatusMessage = $"Стоимость товара ID {SelectedProduct.Id} рассчитана";
+            }
+        }
+
+        /// <summary>
         /// Очищает форму добавления товара.
         /// </summary>
         private void ClearForm()
         {
-            ProductId = 0;
+            ProductId = null;
             ProductName = string.Empty;
             ProductDescription = string.Empty;
-            ProductPrice = 0;
+            ProductPrice = null;
             ProductCategory = string.Empty;
-            ProductStockQuantity = 0;
+            ProductStockQuantity = null;
             SelectedProduct = null;
+            _originalProduct = null;
         }
 
-        #endregion
 
-        #region Вспомогательные методы
 
         /// <summary>
         /// Загружает данные выбранного товара в форму для редактирования.
         /// </summary>
         private void LoadProductForEdit(ProductDto product)
         {
+            // Сохраняем оригинальные данные для сравнения
+            _originalProduct = new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                Category = product.Category,
+                StockQuantity = product.StockQuantity
+            };
+
             ProductId = product.Id;
             ProductName = product.Name;
             ProductDescription = product.Description;
@@ -484,7 +638,5 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
             StatusMessage = $"Ошибка: {message}";
         }
-
-        #endregion
     }
 }
