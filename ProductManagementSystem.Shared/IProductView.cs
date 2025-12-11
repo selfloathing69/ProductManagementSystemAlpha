@@ -31,7 +31,6 @@ namespace ProductManagementSystem.Shared
 
         #endregion
 
-        #region Methods UI Updates
 
         /// <summary>
         /// Отображает список товаров в представлении.
@@ -74,6 +73,5 @@ namespace ProductManagementSystem.Shared
         /// <returns>Кортеж с идентификатором выбранного товара и количеством, или null в случае отмены</returns>
         (int ProductId, int Quantity)? ShowDeleteByQuantityDialog(IEnumerable<(int Index, ProductDto Product)> products);
 
-        #endregion
     }
 }

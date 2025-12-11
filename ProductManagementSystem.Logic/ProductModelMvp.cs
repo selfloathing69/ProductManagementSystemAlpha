@@ -17,7 +17,7 @@ namespace ProductManagementSystem.Logic
         public event EventHandler<string>? ErrorOccurred;
 
 
-     ///===================== Construct================================or
+ 
 
         /// <summary>
         /// »нициализирует новый экземпл€р ProductModelMvp с указанным ProductLogic.
@@ -44,9 +44,7 @@ namespace ProductManagementSystem.Logic
             ErrorOccurred?.Invoke(this, errorMessage);
         }
 
-        #region CRUD Operations
 
-        /// <inheritdoc/>
         public List<Product> GetAllProducts()
         {
             try
@@ -55,12 +53,11 @@ namespace ProductManagementSystem.Logic
             }
             catch (Exception ex)
             {
-                OnErrorOccurred($"Error getting products: {ex.Message}");
+                OnErrorOccurred($"ошибка: {ex.Message}");
                 return new List<Product>();
             }
         }
 
-        /// <inheritdoc/>
         public Product? GetProductById(int id)
         {
             try
@@ -69,12 +66,12 @@ namespace ProductManagementSystem.Logic
             }
             catch (Exception ex)
             {
-                OnErrorOccurred($"Error getting product by ID: {ex.Message}");
+                OnErrorOccurred($"ошибка получени€ айди: {ex.Message}");
                 return null;
             }
         }
 
-        /// <inheritdoc/>
+
         public Product AddProduct(Product product)
         {
             try
@@ -85,12 +82,11 @@ namespace ProductManagementSystem.Logic
             }
             catch (Exception ex)
             {
-                OnErrorOccurred($"Error adding product: {ex.Message}");
+                OnErrorOccurred($"ошибка добавлени€: {ex.Message}");
                 throw;
             }
         }
 
-        /// <inheritdoc/>
         public bool UpdateProduct(Product product)
         {
             try
@@ -104,12 +100,12 @@ namespace ProductManagementSystem.Logic
             }
             catch (Exception ex)
             {
-                OnErrorOccurred($"Error updating product: {ex.Message}");
+                OnErrorOccurred($"ошибка обновы: {ex.Message}");
                 return false;
             }
         }
 
-        /// <inheritdoc/>
+
         public bool DeleteProduct(int id)
         {
             try
@@ -123,16 +119,12 @@ namespace ProductManagementSystem.Logic
             }
             catch (Exception ex)
             {
-                OnErrorOccurred($"Error deleting product: {ex.Message}");
+                OnErrorOccurred($"ошибка удадени€: {ex.Message}");
                 return false;
             }
         }
 
-        #endregion
 
-        #region Business Functions
-
-        /// <inheritdoc/>
         public List<Product> FilterByCategory(string category)
         {
             try
@@ -141,12 +133,11 @@ namespace ProductManagementSystem.Logic
             }
             catch (Exception ex)
             {
-                OnErrorOccurred($"Error filtering by category: {ex.Message}");
+                OnErrorOccurred($"ошибка: {ex.Message}");
                 return new List<Product>();
             }
         }
 
-        /// <inheritdoc/>
         public Dictionary<string, List<Product>> GroupByCategory()
         {
             try
@@ -155,12 +146,12 @@ namespace ProductManagementSystem.Logic
             }
             catch (Exception ex)
             {
-                OnErrorOccurred($"Error grouping by category: {ex.Message}");
+                OnErrorOccurred($"ошибка: {ex.Message}");
                 return new Dictionary<string, List<Product>>();
             }
         }
 
-        /// <inheritdoc/>
+
         public decimal CalculateTotalInventoryValue()
         {
             try
@@ -169,12 +160,12 @@ namespace ProductManagementSystem.Logic
             }
             catch (Exception ex)
             {
-                OnErrorOccurred($"Error calculating total inventory value: {ex.Message}");
+                OnErrorOccurred($"ошибка: {ex.Message}");
                 return 0;
             }
         }
 
-        /// <inheritdoc/>
+
         public Product? FindProductByNameAndCategory(string name, string category)
         {
             try
@@ -183,12 +174,12 @@ namespace ProductManagementSystem.Logic
             }
             catch (Exception ex)
             {
-                OnErrorOccurred($"Error finding product: {ex.Message}");
+                OnErrorOccurred($"ошибка: {ex.Message}");
                 return null;
             }
         }
 
-        /// <inheritdoc/>
+
         public List<Product> SearchProducts(string query)
         {
             try
@@ -197,12 +188,11 @@ namespace ProductManagementSystem.Logic
             }
             catch (Exception ex)
             {
-                OnErrorOccurred($"Error searching products: {ex.Message}");
+                OnErrorOccurred($"ошибка: {ex.Message}");
                 return new List<Product>();
             }
         }
 
-        /// <inheritdoc/>
         public bool AddQuantityToProduct(int id, int quantity)
         {
             try
@@ -216,12 +206,12 @@ namespace ProductManagementSystem.Logic
             }
             catch (Exception ex)
             {
-                OnErrorOccurred($"Error adding quantity to product: {ex.Message}");
+                OnErrorOccurred($"ошибка: {ex.Message}");
                 return false;
             }
         }
 
-        /// <inheritdoc/>
+
         public bool RemoveQuantityFromProduct(int id, int quantityToRemove)
         {
             try
@@ -235,41 +225,38 @@ namespace ProductManagementSystem.Logic
             }
             catch (Exception ex)
             {
-                OnErrorOccurred($"Error removing quantity from product: {ex.Message}");
+                OnErrorOccurred($"ошибка: {ex.Message}");
                 return false;
             }
         }
 
-        /// <inheritdoc/>
+
         public bool ProductExists(int id)
         {
             try
             {
-                // Use GetProductById instead of deprecated IdExists
                 return _logic.GetById(id) != null;
             }
             catch (Exception ex)
             {
-                OnErrorOccurred($"Error checking product existence: {ex.Message}");
+                OnErrorOccurred($"ошибка: {ex.Message}");
                 return false;
             }
         }
 
-        /// <inheritdoc/>
+
         public List<(int Index, Product Product)> GetProductsWithIndexes()
         {
             try
             {
-                // Use GetAll() with Select to create indexed tuples instead of obsolete method
                 return _logic.GetAll().Select((p, index) => (index + 1, p)).ToList();
             }
             catch (Exception ex)
             {
-                OnErrorOccurred($"Error getting products with indexes: {ex.Message}");
+                OnErrorOccurred($"ошибка: {ex.Message}");
                 return new List<(int, Product)>();
             }
         }
 
-        #endregion
     }
 }

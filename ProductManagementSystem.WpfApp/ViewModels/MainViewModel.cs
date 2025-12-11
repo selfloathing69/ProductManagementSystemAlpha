@@ -19,9 +19,8 @@ namespace ProductManagementSystem.WpfApp.ViewModels
     /// MainViewModel координирует взаимодействие между View (MainWindow) и Model (ProductLogic).
     /// Содержит коллекции данных, команды для UI элементов и бизнес-логику представления.
     /// </summary>
-    public class MainViewModel : ViewModelBase
+    public class MainViewModel : ViewModelBase // === ВьюМодел
     {
-        #region Поля
 
         private readonly ILogic _logic;
         private ObservableCollection<ProductDto> _products;
@@ -29,22 +28,19 @@ namespace ProductManagementSystem.WpfApp.ViewModels
         private ProductDto? _selectedProduct;
         private string _selectedCategory = "Все категории";
         private decimal _totalInventoryValue;
+        private decimal _selectedProductValue;
         private string _statusMessage = "Готово";
 
         // Поля для добавления/редактирования товара
-        private int _productId;
+        private int? _productId;
         private string _productName = string.Empty;
         private string _productDescription = string.Empty;
-        private decimal _productPrice;
+        private decimal? _productPrice;
         private string _productCategory = string.Empty;
-        private int _productStockQuantity;
-
-        #endregion
-
-        #region Свойства для привязки к UI
+        private int? _productStockQuantity;
 
         /// <summary>
-        /// Коллекция товаров для отображения в DataGrid.
+        /// Коллекция товаров для отображения
         /// ObservableCollection автоматически уведомляет UI об изменениях.
         /// </summary>
         public ObservableCollection<ProductDto> Products
@@ -63,17 +59,26 @@ namespace ProductManagementSystem.WpfApp.ViewModels
         }
 
         /// <summary>
-        /// Выбранный товар в DataGrid.
+        /// Выбранный това
         /// </summary>
         public ProductDto? SelectedProduct
         {
             get => _selectedProduct;
             set
             {
-                if (SetProperty(ref _selectedProduct, value) && value != null)
+                if (SetProperty(ref _selectedProduct, value))
                 {
-                    // При выборе товара заполняем поля для редактирования
-                    LoadProductForEdit(value);
+                    if (value != null)
+                    {
+                        // При выборе товара заполняем поля для редактирования
+                        LoadProductForEdit(value);
+                        // Рассчитываем стоимость выбранного товара
+                        CalculateSelectedProductValue();
+                    }
+                    else
+                    {
+                        SelectedProductValue = 0;
+                    }
                 }
             }
         }
@@ -97,6 +102,15 @@ namespace ProductManagementSystem.WpfApp.ViewModels
         }
 
         /// <summary>
+        /// Стоимость выбранного товара (Price * StockQuantity).
+        /// </summary>
+        public decimal SelectedProductValue
+        {
+            get => _selectedProductValue;
+            set => SetProperty(ref _selectedProductValue, value);
+        }
+
+        /// <summary>
         /// Сообщение статуса для отображения в строке состояния.
         /// </summary>
         public string StatusMessage
@@ -105,9 +119,8 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             set => SetProperty(ref _statusMessage, value);
         }
 
-        #region Свойства для формы добавления/редактирования
 
-        public int ProductId
+        public int? ProductId
         {
             get => _productId;
             set => SetProperty(ref _productId, value);
@@ -125,7 +138,7 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             set => SetProperty(ref _productDescription, value);
         }
 
-        public decimal ProductPrice
+        public decimal? ProductPrice
         {
             get => _productPrice;
             set => SetProperty(ref _productPrice, value);
@@ -137,20 +150,14 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             set => SetProperty(ref _productCategory, value);
         }
 
-        public int ProductStockQuantity
+        public int? ProductStockQuantity
         {
             get => _productStockQuantity;
             set => SetProperty(ref _productStockQuantity, value);
         }
 
-        #endregion
-
-        #endregion
-
-        #region Команды
-
         /// <summary>
-        /// Команда обновления списка товаров.
+        /// паттерн команда =====================
         /// </summary>
         public ICommand RefreshCommand { get; }
 
@@ -175,13 +182,16 @@ namespace ProductManagementSystem.WpfApp.ViewModels
         public ICommand CalculateTotalCommand { get; }
 
         /// <summary>
+        /// Команда расчета стоимости выбранного товара.
+        /// </summary>
+        public ICommand CalculateSelectedProductCommand { get; }
+
+        /// <summary>
         /// Команда очистки формы добавления товара.
         /// </summary>
         public ICommand ClearFormCommand { get; }
 
-        #endregion
 
-        #region Конструктор
 
         /// <summary>
         /// Инициализирует новый экземпляр MainViewModel.
@@ -200,15 +210,14 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             DeleteProductCommand = new RelayCommand(_ => DeleteProduct(), _ => CanDeleteProduct());
             ApplyFilterCommand = new RelayCommand(_ => ApplyFilter());
             CalculateTotalCommand = new RelayCommand(_ => CalculateTotal());
+            CalculateSelectedProductCommand = new RelayCommand(_ => CalculateSelectedProductValue(), _ => CanCalculateSelectedProduct());
             ClearFormCommand = new RelayCommand(_ => ClearForm());
 
             // Загрузка начальных данных
             LoadInitialData();
         }
 
-        #endregion
 
-        #region Методы загрузки данных
 
         /// <summary>
         /// Загружает начальные данные при запуске приложения.
@@ -264,10 +273,6 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             }
         }
 
-        #endregion
-
-        #region Методы команд
-
         /// <summary>
         /// Добавляет новый товар в систему.
         /// </summary>
@@ -288,21 +293,27 @@ namespace ProductManagementSystem.WpfApp.ViewModels
                     return;
                 }
 
+                if (!ProductPrice.HasValue || ProductPrice.Value <= 0)
+                {
+                    ShowError("Ошибка валидации", "Цена должна быть больше нуля!");
+                    return;
+                }
+
                 // Создание товара
                 var product = new Product
                 {
-                    Id = ProductId,
+                    Id = ProductId ?? 0,
                     Name = ProductName.Trim(),
                     Description = ProductDescription.Trim(),
-                    Price = ProductPrice,
+                    Price = ProductPrice.Value,
                     Category = ProductCategory.Trim(),
-                    StockQuantity = ProductStockQuantity
+                    StockQuantity = ProductStockQuantity ?? 0
                 };
 
                 // Проверка существования ID
-                if (ProductId > 0)
+                if (ProductId.HasValue && ProductId.Value > 0)
                 {
-                    var existing = _logic.GetById(ProductId);
+                    var existing = _logic.GetById(ProductId.Value);
                     if (existing != null)
                     {
                         var result = MessageBox.Show(
@@ -337,7 +348,8 @@ namespace ProductManagementSystem.WpfApp.ViewModels
         {
             return !string.IsNullOrWhiteSpace(ProductName) &&
                    !string.IsNullOrWhiteSpace(ProductCategory) &&
-                   ProductPrice > 0;
+                   ProductPrice.HasValue &&
+                   ProductPrice.Value > 0;
         }
 
         /// <summary>
@@ -421,7 +433,7 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             try
             {
                 TotalInventoryValue = _logic.CalculateTotalInventoryValue();
-                StatusMessage = $"Общая стоимость склада: {TotalInventoryValue:C}";
+                StatusMessage = $"Общая стоимость склада рассчитана";
             }
             catch (Exception ex)
             {
@@ -430,22 +442,40 @@ namespace ProductManagementSystem.WpfApp.ViewModels
         }
 
         /// <summary>
+        /// Рассчитывает стоимость выбранного товара.
+        /// </summary>
+        private void CalculateSelectedProductValue()
+        {
+            if (SelectedProduct != null)
+            {
+                SelectedProductValue = SelectedProduct.Price * SelectedProduct.StockQuantity;
+                StatusMessage = $"Стоимость товара ID {SelectedProduct.Id} рассчитана";
+            }
+        }
+
+        /// <summary>
+        /// Проверяет возможность расчета стоимости выбранного товара.
+        /// </summary>
+        private bool CanCalculateSelectedProduct()
+        {
+            return SelectedProduct != null;
+        }
+
+        /// <summary>
         /// Очищает форму добавления товара.
         /// </summary>
         private void ClearForm()
         {
-            ProductId = 0;
+            ProductId = null;
             ProductName = string.Empty;
             ProductDescription = string.Empty;
-            ProductPrice = 0;
+            ProductPrice = null;
             ProductCategory = string.Empty;
-            ProductStockQuantity = 0;
+            ProductStockQuantity = null;
             SelectedProduct = null;
         }
 
-        #endregion
 
-        #region Вспомогательные методы
 
         /// <summary>
         /// Загружает данные выбранного товара в форму для редактирования.
@@ -484,7 +514,5 @@ namespace ProductManagementSystem.WpfApp.ViewModels
             MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
             StatusMessage = $"Ошибка: {message}";
         }
-
-        #endregion
     }
 }

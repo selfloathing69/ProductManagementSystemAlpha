@@ -13,7 +13,6 @@ namespace ProductManagementSystem.WpfApp.Commands
     /// без необходимости писать обработчики событий в CodeBehind.
     /// 
     /// Пример использования в ViewModel:
-    /// <code>
     /// public ICommand AddProductCommand => new RelayCommand(AddProduct, CanAddProduct);
     /// 
     /// private void AddProduct(object parameter)
@@ -25,7 +24,6 @@ namespace ProductManagementSystem.WpfApp.Commands
     /// {
     ///     return !string.IsNullOrEmpty(ProductName);
     /// }
-    /// </code>
     /// </summary>
     public class RelayCommand : ICommand
     {
